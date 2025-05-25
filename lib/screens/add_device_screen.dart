@@ -27,7 +27,6 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index == 1) {
-            // Already on device tab, no need to navigate again
             Navigator.pushReplacementNamed(context, '/alldevice');
           } else {
             setState(() {

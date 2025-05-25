@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
       home: const AddDeviceScreen(),
        routes: {
         '/alldevice': (context) => const DevicesScreen(),
+        
       },
       debugShowCheckedModeBanner: false,
     );

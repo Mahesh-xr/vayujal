@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:vayujal/screens/all_devices.dart';
 import 'device_information_section.dart';
 import 'customer_details_section.dart';
 
 class DeviceForm extends StatefulWidget {
-  const DeviceForm({Key? key}) : super(key: key);
+  const DeviceForm({Key? key,this.deviceToEdit}) : super(key: key);
+
+  final Map<String, dynamic>? deviceToEdit;
+
+  // const DeviceForm({Key? key, this.deviceToEdit}) : super(key: key);
 
   @override
   State<DeviceForm> createState() => _DeviceFormState();
@@ -22,6 +27,40 @@ class _DeviceFormState extends State<DeviceForm> {
   String? _selectedDispenser;
   String? _selectedPowerSource;
   List<String> _uploadedPhotos = [];
+
+
+
+  @override
+void initState() {
+  super.initState();
+
+  if (widget.deviceToEdit != null) {
+    final device = widget.deviceToEdit!;
+    final deviceInfo = device['deviceInfo'];
+    final customer = device['customerDetails'];
+    final location = device['locationDetails'];
+    final maintenance = device['maintenanceContract'];
+
+    _selectedModel = deviceInfo['model'];
+    _serialNumberController.text = deviceInfo['serialNumber'];
+    _installationDateController.text = deviceInfo['installationDate'];
+    _selectedDispenser = deviceInfo['dispenserDetails'];
+    _selectedPowerSource = deviceInfo['powerSource'];
+    _uploadedPhotos = List<String>.from(deviceInfo['uploadedPhotos'] ?? []);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _customerDetailsKey.currentState?.nameController.text = customer['name'];
+      _customerDetailsKey.currentState?.companyController.text = customer['company'];
+      _customerDetailsKey.currentState?.phoneController.text = customer['phone'];
+      _customerDetailsKey.currentState?.emailController.text = customer['email'];
+      _customerDetailsKey.currentState?.cityController.text = location['city'];
+      _customerDetailsKey.currentState?.stateController.text = location['state'];
+      _customerDetailsKey.currentState?.fullAddressController.text = location['fullAddress'];
+      _customerDetailsKey.currentState?.enableMaintenanceContract = maintenance['annualContract'];
+    });
+  }
+}
+
 
   @override
   void dispose() {
@@ -56,34 +95,46 @@ class _DeviceFormState extends State<DeviceForm> {
 
 
 
-  void _printAllFormData() {
-    if (_formKey.currentState!.validate()) {
-      // Device information
-      print('=== DEVICE INFORMATION ===');
-      print('Model: $_selectedModel');
-      print('Serial Number: ${_serialNumberController.text}');
-      print('Dispenser Details: $_selectedDispenser');
-      print('Power Source: $_selectedPowerSource');
-      print('Installation Date: ${_installationDateController.text}');
-      print('Uploaded Photos: $_uploadedPhotos');
+void _printAllFormData() {
+  if (_formKey.currentState!.validate()) {
+    final customerState = _customerDetailsKey.currentState!;
 
-      // Customer information (accessed via the key)
-      final customerState = _customerDetailsKey.currentState!;
-      print('\n=== CUSTOMER DETAILS ===');
-      print('Name: ${customerState.nameController.text}');
-      print('Company: ${customerState.companyController.text}');
-      print('Phone: ${customerState.phoneController.text}');
-      print('Email: ${customerState.emailController.text}');
-      
-      print('\n=== LOCATION DETAILS ===');
-      print('City: ${customerState.cityController.text}');
-      print('State: ${customerState.stateController.text}');
-      print('Full Address: ${customerState.fullAddressController.text}');
-      
-      print('\n=== MAINTENANCE CONTRACT ===');
-      print('Annual Maintenance Contract: ${customerState.enableMaintenanceContract}');
-    }
+    final formData = {
+      'deviceInfo': {
+        'model': _selectedModel,
+        'serialNumber': _serialNumberController.text,
+        'dispenserDetails': _selectedDispenser ?? '',
+        'powerSource': _selectedPowerSource ?? '',
+        'installationDate': _installationDateController.text,
+        'uploadedPhotos': _uploadedPhotos, // Make sure it's serializable
+      },
+      'customerDetails': {
+        'name': customerState.nameController.text,
+        'company': customerState.companyController.text,
+        'phone': customerState.phoneController.text,
+        'email': customerState.emailController.text,
+      },
+      'locationDetails': {
+        'city': customerState.cityController.text,
+        'state': customerState.stateController.text,
+        'fullAddress': customerState.fullAddressController.text,
+      },
+      'maintenanceContract': {
+        'annualContract': customerState.enableMaintenanceContract,
+      }
+    };
+    print(formData);
+
+    // Example usage: pass to DevicesScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DevicesScreen(newDevice: formData),
+      ),
+    );
   }
+}
+
 
 
   @override
@@ -122,10 +173,11 @@ class _DeviceFormState extends State<DeviceForm> {
                 ),
                 elevation: 2, // Shadow
               ),
-              child: const Text(
-                'Register Device',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
+               child: Text(
+  widget.deviceToEdit != null ? 'Save Changes' : 'Register Device',
+  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+),
+
             ),
           ),
         ],

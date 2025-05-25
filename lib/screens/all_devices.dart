@@ -1,13 +1,15 @@
 // screens/devices_screen.dart
 import 'package:flutter/material.dart';
+import 'package:vayujal/widgets/add_new_device_widgets/device_form.dart';
 import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
 import 'package:vayujal/widgets/device_widgets/device_card.dart';
 import 'package:vayujal/widgets/device_widgets/filter_chip_widget.dart';
 import 'package:vayujal/widgets/device_widgets/search_bar_widget.dart';
 
-
 class DevicesScreen extends StatefulWidget {
-  const DevicesScreen({Key? key}) : super(key: key);
+  final Map<String, dynamic>? newDevice;
+
+  const DevicesScreen({Key? key, this.newDevice}) : super(key: key);
 
   @override
   State<DevicesScreen> createState() => _DevicesScreenState();
@@ -18,33 +20,73 @@ class _DevicesScreenState extends State<DevicesScreen> {
   int _selectedFilterIndex = 0;
   int _currentNavIndex = 1;
 
-  final List<String> _filterOptions = [
-    'AWG Model',
-    'AWG Serial Number',
-  ];
+  final List<String> _filterOptions = ['AWG Model', 'AWG Serial Number'];
 
-  final List<Map<String, String>> _devices = [
-    {
-      'model': 'AWG100',
-      'serialNumber': 'AWG100-2023-12345',
-      'customer': 'Acme Corporation',
-      'location': 'Chennai',
-      'lastService': '2023-03-15',
+final List<Map<String, dynamic>> _devices = [
+  {
+    'deviceInfo': {
+      'model': 'Model A',
+      'serialNumber': '431313',
+      'dispenserDetails': 'Type A',
+      'powerSource': 'AC Power',
+      'installationDate': '19-05-2025',
+      'uploadedPhotos': [],
     },
-    {
-      'model': 'AWG100',
-      'serialNumber': 'AWG100-2023-12345',
-      'customer': 'Acme Corporation',
-      'location': 'Chennai',
-      'lastService': '2023-03-15',
+    'customerDetails': {
+      'name': '',
+      'company': 'kjkj',
+      'phone': '341634510',
+      'email': 'mahesh@gmail.com',
     },
-  ];
+    'locationDetails': {
+      'city': 'lskdf;skd;f',
+      'state': 'asdfkjbskdafb',
+      'fullAddress': 'sdfsdf',
+    },
+    'maintenanceContract': {
+      'annualContract': true,
+    },
+  },
+  {
+    'deviceInfo': {
+      'model': 'Model B',
+      'serialNumber': '987654',
+      'dispenserDetails': 'Type B',
+      'powerSource': 'Battery',
+      'installationDate': '01-04-2024',
+      'uploadedPhotos': [],
+    },
+    'customerDetails': {
+      'name': 'John Doe',
+      'company': 'Zeta Tech',
+      'phone': '9876543210',
+      'email': 'john.doe@zetatech.com',
+    },
+    'locationDetails': {
+      'city': 'Mumbai',
+      'state': 'Maharashtra',
+      'fullAddress': '123 Zeta Street, Tech Park',
+    },
+    'maintenanceContract': {
+      'annualContract': false,
+    },
+  },
+];
+
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.newDevice != null) {
+      _devices.insert(0, widget.newDevice!); // Add to top of the list
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      appBar:const CustomAppBar(title: 'Add New Device'),
+      appBar: const CustomAppBar(title: 'Add New Device'),
       body: Column(
         children: [
           const SizedBox(height: 16),
@@ -52,12 +94,9 @@ class _DevicesScreenState extends State<DevicesScreen> {
           const SizedBox(height: 16),
           _buildFilterSection(),
           const SizedBox(height: 8),
-          Expanded(
-            child: _buildDevicesList(),
-          ),
+          Expanded(child: _buildDevicesList()),
         ],
       ),
-     
     );
   }
 
@@ -118,10 +157,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
             child: const Text(
               'Register\nDevice',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -135,11 +171,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          const Icon(
-            Icons.tune,
-            color: Colors.black,
-            size: 20,
-          ),
+          const Icon(Icons.tune, color: Colors.black, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: ListView.builder(
@@ -171,20 +203,25 @@ class _DevicesScreenState extends State<DevicesScreen> {
       itemBuilder: (context, index) {
         final device = _devices[index];
         return DeviceCard(
-          deviceModel: device['model']!,
-          serialNumber: device['serialNumber']!,
-          customer: device['customer']!,
-          location: device['location']!,
-          lastService: device['lastService']!,
-          onEdit: () {
-            // Handle edit
-            print('Edit device: ${device['serialNumber']}');
-          },
-          onService: () {
-            // Handle service
-            print('Service device: ${device['serialNumber']}');
-          },
-        );
+  deviceModel: device['deviceInfo']['model'],
+  serialNumber: device['deviceInfo']['serialNumber'],
+  customer: device['customerDetails']['company'],
+  location: device['locationDetails']['city'],
+  lastService: device['deviceInfo']['installationDate'],
+  onEdit: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DeviceForm(deviceToEdit: device),
+      ),
+    );
+  },
+  onService: () {
+    // Handle service
+    print('Service device: ${device['deviceInfo']['serialNumber']}');
+  },
+);
+
       },
     );
   }
