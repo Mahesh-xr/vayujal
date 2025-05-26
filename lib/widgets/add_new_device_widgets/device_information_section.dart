@@ -63,7 +63,7 @@ class DeviceInformationSection extends StatelessWidget {
           CustomDropdown(
             label: 'Model',
             value: selectedModel,
-            items: const ['AWG Model', 'Model A', 'Model B', 'Model C'],
+            items: const ['AWG Model', 'VJ - Home', 'VJ - Plus', 'VJ - Grand' ,'VJ - Ultra', 'VJ - Max'],
             onChanged: onModelChanged,
           ),
           const SizedBox(height: 16),
@@ -92,7 +92,7 @@ class DeviceInformationSection extends StatelessWidget {
           CustomDropdown(
             label: 'Dispenser Details',
             value: selectedDispenser,
-            items: const ['Select', 'Type A', 'Type B', 'Type C'],
+            items: const ['Select', 'Standard Dual Dispenser', 'Premium Dispenser', 'Custom Configuration'],
             onChanged: onDispenserChanged,
           ),
           const SizedBox(height: 16),
@@ -101,7 +101,7 @@ class DeviceInformationSection extends StatelessWidget {
           CustomDropdown(
             label: 'Power source',
             value: selectedPowerSource,
-            items: const ['Select', 'AC Power', 'DC Power', 'Solar'],
+            items: const ['Select', '220V AC', '110V AC', ],
             onChanged: onPowerSourceChanged,
           ),
           const SizedBox(height: 16),
