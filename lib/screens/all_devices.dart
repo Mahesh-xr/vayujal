@@ -5,7 +5,7 @@ import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
 import 'package:vayujal/widgets/device_widgets/device_card.dart';
 import 'package:vayujal/widgets/device_widgets/filter_chip_widget.dart';
 import 'package:vayujal/widgets/device_widgets/search_bar_widget.dart';
-import 'package:vayujal/DatabaseACtion/AdminAction.dart'; 
+import 'package:vayujal/DatabaseACtion/AdminAction.dart';
 
 class DevicesScreen extends StatefulWidget {
   final Map<String, dynamic>? newDevice;
@@ -49,7 +49,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: Colors.grey[80],
       appBar: const CustomAppBar(title: 'All Devices'),
       body: Column(
         children: [
@@ -61,6 +61,40 @@ class _DevicesScreenState extends State<DevicesScreen> {
           Expanded(child: _buildDevicesList()),
         ],
       ),
+      bottomNavigationBar: BottomNavigation(
+                        currentIndex: 1,
+                        onTap: (index) {
+                          switch (index) {
+                            case 0:
+                              Navigator.pushReplacementNamed(context, '/home');
+                              break;
+                            case 1:
+                              Navigator.pushReplacementNamed(
+                                context,
+                                '/alldevice',
+                              );
+                            case 2:
+                              Navigator.pushReplacementNamed(
+                                context,
+                                '/profile',
+                              );
+                              break;
+                            case 3:
+                              Navigator.pushReplacementNamed(
+                                context,
+                                '/history',
+                              );
+                              break;
+                            case 4:
+                              Navigator.pushReplacementNamed(
+                                context,
+                                '/notifications',
+                              );
+                              break;
+                          }
+                        },
+                      ),
+    
     );
   }
 
@@ -157,40 +191,51 @@ class _DevicesScreenState extends State<DevicesScreen> {
           lastService: deviceInfo['installationDate'] ?? 'N/A',
           onEdit: () {
             Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: const CustomAppBar(title: 'Edit Device Details'),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: DeviceForm(deviceToEdit: device),
-          ),
-          bottomNavigationBar: BottomNavigation(
-        currentIndex: 0,
-        onTap: (index) {
-          
-            switch (index) {
-              case 0:
-                Navigator.pushReplacementNamed(context, '/home');
-                break;
-              case 1:
-                Navigator.pushReplacementNamed(context, '/alldevice');
-              case 2:
-                Navigator.pushReplacementNamed(context, '/profile');
-                break;
-              case 3:
-                Navigator.pushReplacementNamed(context, '/history');
-                break;
-              case 4:
-                Navigator.pushReplacementNamed(context, '/notifications');
-                break;
-            }
-          
-        },
-      ),
-        ),
-      ),
-    );
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => Scaffold(
+                      appBar: const CustomAppBar(title: 'Edit Device Details'),
+                      body: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16),
+                        child: DeviceForm(deviceToEdit: device),
+                      ),
+                      bottomNavigationBar: BottomNavigation(
+                        currentIndex: 0,
+                        onTap: (index) {
+                          switch (index) {
+                            case 0:
+                              Navigator.pushReplacementNamed(context, '/home');
+                              break;
+                            case 1:
+                              Navigator.pushReplacementNamed(
+                                context,
+                                '/alldevice',
+                              );
+                            case 2:
+                              Navigator.pushReplacementNamed(
+                                context,
+                                '/profile',
+                              );
+                              break;
+                            case 3:
+                              Navigator.pushReplacementNamed(
+                                context,
+                                '/history',
+                              );
+                              break;
+                            case 4:
+                              Navigator.pushReplacementNamed(
+                                context,
+                                '/notifications',
+                              );
+                              break;
+                          }
+                        },
+                      ),
+                    ),
+              ),
+            );
           },
           onService: () {
             print('Service device: ${deviceInfo['serialNumber']}');

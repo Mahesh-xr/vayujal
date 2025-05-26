@@ -27,8 +27,12 @@ class MyApp extends StatelessWidget {
       ),
       home: const DashboardScreen(),
       routes: {
-        '/alldevice': (context) => const DevicesScreen(),
-      },
+    '/home': (context) => const DashboardScreen(),
+    '/alldevice': (context) => const DevicesScreen(),
+    // '/profile': (context) => const ProfileListScreen(),
+    // '/history': (context) => const HistoryScreen(),
+    // '/notifications': (context) => const NotificationScreen(),
+  },
       debugShowCheckedModeBanner: false,
     );
   }

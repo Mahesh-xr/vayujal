@@ -22,7 +22,7 @@ class PhotoUploadWidget extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.grey,
+            color: Colors.black87
           ),
         ),
         const SizedBox(height: 8),

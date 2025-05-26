@@ -21,10 +21,10 @@ class CustomDropdown extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style:  TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.grey,
+            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 8),

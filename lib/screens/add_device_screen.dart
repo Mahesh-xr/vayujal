@@ -20,7 +20,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.grey[80],
       appBar: const CustomAppBar(title: 'Add New Device'),
       body: const SingleChildScrollView(
         padding: EdgeInsets.all(16.0),

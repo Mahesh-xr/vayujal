@@ -19,16 +19,17 @@ class QuickActionsSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _buildActionButtons(),
+        _buildActionButtons(context),
       ],
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(BuildContext context) {
     return Column(
       children: [
         GestureDetector(
           onTap: () {
+            
             Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const AddDeviceScreen()),
@@ -37,6 +38,16 @@ class QuickActionsSection extends StatelessWidget {
           child: ActionButton(
             title: 'Register new AWG', 
             icon: Icons.add_circle,
+            onPressed: () {
+                          print("got clicked");
+
+
+              Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AddDeviceScreen()),
+        );
+              
+            },
           ),
         ),
         const SizedBox(height: 12),
