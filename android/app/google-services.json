@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205934383175",
+    "project_id": "vayujal-db-for-customer-device",
+    "storage_bucket": "vayujal-db-for-customer-device.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205934383175:android:c6cea6193940bc5a752162",
+        "android_client_info": {
+          "package_name": "com.example.vayujal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0B4O0BocPLUBSn10-gis8VAozWysDYVI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

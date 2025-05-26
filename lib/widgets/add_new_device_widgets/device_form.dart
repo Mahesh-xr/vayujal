@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:vayujal/DatabaseAction/adminAction.dart';
 import 'package:vayujal/screens/all_devices.dart';
 import 'device_information_section.dart';
 import 'customer_details_section.dart';
 
 class DeviceForm extends StatefulWidget {
-  const DeviceForm({Key? key,this.deviceToEdit}) : super(key: key);
+  const DeviceForm({super.key, this.deviceToEdit});
 
   final Map<String, dynamic>? deviceToEdit;
-
-  // const DeviceForm({Key? key, this.deviceToEdit}) : super(key: key);
 
   @override
   State<DeviceForm> createState() => _DeviceFormState();
@@ -18,49 +17,43 @@ class _DeviceFormState extends State<DeviceForm> {
   final _formKey = GlobalKey<FormState>();
   final _serialNumberController = TextEditingController();
   final _installationDateController = TextEditingController();
-
-
   final _customerDetailsKey = GlobalKey<CustomerDetailsSectionState>();
-
 
   String? _selectedModel;
   String? _selectedDispenser;
   String? _selectedPowerSource;
   List<String> _uploadedPhotos = [];
 
-
-
   @override
-void initState() {
-  super.initState();
+  void initState() {
+    super.initState();
 
-  if (widget.deviceToEdit != null) {
-    final device = widget.deviceToEdit!;
-    final deviceInfo = device['deviceInfo'];
-    final customer = device['customerDetails'];
-    final location = device['locationDetails'];
-    final maintenance = device['maintenanceContract'];
+    if (widget.deviceToEdit != null) {
+      final device = widget.deviceToEdit!;
+      final deviceInfo = device['deviceInfo'];
+      final customer = device['customerDetails'];
+      final location = device['locationDetails'];
+      final maintenance = device['maintenanceContract'];
 
-    _selectedModel = deviceInfo['model'];
-    _serialNumberController.text = deviceInfo['serialNumber'];
-    _installationDateController.text = deviceInfo['installationDate'];
-    _selectedDispenser = deviceInfo['dispenserDetails'];
-    _selectedPowerSource = deviceInfo['powerSource'];
-    _uploadedPhotos = List<String>.from(deviceInfo['uploadedPhotos'] ?? []);
+      _selectedModel = deviceInfo['model'];
+      _serialNumberController.text = deviceInfo['serialNumber'];
+      _installationDateController.text = deviceInfo['installationDate'];
+      _selectedDispenser = deviceInfo['dispenserDetails'];
+      _selectedPowerSource = deviceInfo['powerSource'];
+      _uploadedPhotos = List<String>.from(deviceInfo['uploadedPhotos'] ?? []);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _customerDetailsKey.currentState?.nameController.text = customer['name'];
-      _customerDetailsKey.currentState?.companyController.text = customer['company'];
-      _customerDetailsKey.currentState?.phoneController.text = customer['phone'];
-      _customerDetailsKey.currentState?.emailController.text = customer['email'];
-      _customerDetailsKey.currentState?.cityController.text = location['city'];
-      _customerDetailsKey.currentState?.stateController.text = location['state'];
-      _customerDetailsKey.currentState?.fullAddressController.text = location['fullAddress'];
-      _customerDetailsKey.currentState?.enableMaintenanceContract = maintenance['annualContract'];
-    });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _customerDetailsKey.currentState?.nameController.text = customer['name'];
+        _customerDetailsKey.currentState?.companyController.text = customer['company'];
+        _customerDetailsKey.currentState?.phoneController.text = customer['phone'];
+        _customerDetailsKey.currentState?.emailController.text = customer['email'];
+        _customerDetailsKey.currentState?.cityController.text = location['city'];
+        _customerDetailsKey.currentState?.stateController.text = location['state'];
+        _customerDetailsKey.currentState?.fullAddressController.text = location['fullAddress'];
+        _customerDetailsKey.currentState?.enableMaintenanceContract = maintenance['annualContract'];
+      });
+    }
   }
-}
-
 
   @override
   void dispose() {
@@ -93,49 +86,62 @@ void initState() {
     });
   }
 
+  void _printAllFormData() async {
+    if (_formKey.currentState!.validate()) {
+      final customerState = _customerDetailsKey.currentState!;
 
+      final formData = {
+        'deviceInfo': {
+          'model': _selectedModel,
+          'serialNumber': _serialNumberController.text,
+          'dispenserDetails': _selectedDispenser ?? '',
+          'powerSource': _selectedPowerSource ?? '',
+          'installationDate': _installationDateController.text,
+          'uploadedPhotos': _uploadedPhotos,
+        },
+        'customerDetails': {
+          'name': customerState.nameController.text,
+          'company': customerState.companyController.text,
+          'phone': customerState.phoneController.text,
+          'email': customerState.emailController.text,
+        },
+        'locationDetails': {
+          'city': customerState.cityController.text,
+          'state': customerState.stateController.text,
+          'fullAddress': customerState.fullAddressController.text,
+        },
+        'maintenanceContract': {
+          'annualContract': customerState.enableMaintenanceContract,
+        }
+      };
 
-void _printAllFormData() {
-  if (_formKey.currentState!.validate()) {
-    final customerState = _customerDetailsKey.currentState!;
+      // final adminAction = AdminAction();
 
-    final formData = {
-      'deviceInfo': {
-        'model': _selectedModel,
-        'serialNumber': _serialNumberController.text,
-        'dispenserDetails': _selectedDispenser ?? '',
-        'powerSource': _selectedPowerSource ?? '',
-        'installationDate': _installationDateController.text,
-        'uploadedPhotos': _uploadedPhotos, // Make sure it's serializable
-      },
-      'customerDetails': {
-        'name': customerState.nameController.text,
-        'company': customerState.companyController.text,
-        'phone': customerState.phoneController.text,
-        'email': customerState.emailController.text,
-      },
-      'locationDetails': {
-        'city': customerState.cityController.text,
-        'state': customerState.stateController.text,
-        'fullAddress': customerState.fullAddressController.text,
-      },
-      'maintenanceContract': {
-        'annualContract': customerState.enableMaintenanceContract,
+      try {
+        if (widget.deviceToEdit != null && widget.deviceToEdit!['id'] != null) {
+          await AdminAction.editDevice(widget.deviceToEdit!['id'], formData);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Device updated successfully!')),
+          );
+        } else {
+          await AdminAction.addNewDevice(formData);
+          // ignore: use_build_context_synchronously
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Device registered successfully!')),
+          );
+        }
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DevicesScreen()),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
       }
-    };
-    print(formData);
-
-    // Example usage: pass to DevicesScreen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DevicesScreen(newDevice: formData),
-      ),
-    );
+    }
   }
-}
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -159,25 +165,23 @@ void _printAllFormData() {
           const SizedBox(height: 24),
           CustomerDetailsSection(key: _customerDetailsKey),
           Container(
-            width: double.infinity, // Makes the button full width
+            width: double.infinity,
             margin: const EdgeInsets.only(top: 20),
             child: ElevatedButton(
-              onPressed: () {
-             _printAllFormData();              },
+              onPressed: _printAllFormData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, // Button color
-                foregroundColor: Colors.white, // Text color
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                elevation: 2, // Shadow
+                elevation: 2,
               ),
-               child: Text(
-  widget.deviceToEdit != null ? 'Save Changes' : 'Register Device',
-  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-),
-
+              child: Text(
+                widget.deviceToEdit != null ? 'Save Changes' : 'Register Device',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
             ),
           ),
         ],

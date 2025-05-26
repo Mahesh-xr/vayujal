@@ -1,8 +1,15 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:vayujal/firebase_options.dart';
 import 'package:vayujal/screens/all_devices.dart';
 import 'screens/add_device_screen.dart';
 
-void main() {
+
+void main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+);
+
   runApp(const MyApp());
 }
 

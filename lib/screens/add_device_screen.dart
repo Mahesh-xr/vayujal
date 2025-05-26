@@ -3,9 +3,12 @@ import '../widgets/navigations/custom_app_bar.dart';
 import '../widgets/add_new_device_widgets/device_form.dart';
 import '../widgets/navigations/bottom_navigation.dart';
 
+// ...
+
+
 class AddDeviceScreen extends StatefulWidget {
   // Changed to StatefulWidget
-  const AddDeviceScreen({Key? key}) : super(key: key);
+  const AddDeviceScreen({super.key});
 
   @override
   State<AddDeviceScreen> createState() => _AddDeviceScreenState();

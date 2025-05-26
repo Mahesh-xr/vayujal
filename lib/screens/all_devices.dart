@@ -9,7 +9,7 @@ import 'package:vayujal/widgets/device_widgets/search_bar_widget.dart';
 class DevicesScreen extends StatefulWidget {
   final Map<String, dynamic>? newDevice;
 
-  const DevicesScreen({Key? key, this.newDevice}) : super(key: key);
+  const DevicesScreen({super.key, this.newDevice});
 
   @override
   State<DevicesScreen> createState() => _DevicesScreenState();
@@ -18,69 +18,23 @@ class DevicesScreen extends StatefulWidget {
 class _DevicesScreenState extends State<DevicesScreen> {
   final TextEditingController _searchController = TextEditingController();
   int _selectedFilterIndex = 0;
-  int _currentNavIndex = 1;
 
   final List<String> _filterOptions = ['AWG Model', 'AWG Serial Number'];
 
-final List<Map<String, dynamic>> _devices = [
-  {
-    'deviceInfo': {
-      'model': 'Model A',
-      'serialNumber': '431313',
-      'dispenserDetails': 'Type A',
-      'powerSource': 'AC Power',
-      'installationDate': '19-05-2025',
-      'uploadedPhotos': [],
-    },
-    'customerDetails': {
-      'name': '',
-      'company': 'kjkj',
-      'phone': '341634510',
-      'email': 'mahesh@gmail.com',
-    },
-    'locationDetails': {
-      'city': 'lskdf;skd;f',
-      'state': 'asdfkjbskdafb',
-      'fullAddress': 'sdfsdf',
-    },
-    'maintenanceContract': {
-      'annualContract': true,
-    },
-  },
-  {
-    'deviceInfo': {
-      'model': 'Model B',
-      'serialNumber': '987654',
-      'dispenserDetails': 'Type B',
-      'powerSource': 'Battery',
-      'installationDate': '01-04-2024',
-      'uploadedPhotos': [],
-    },
-    'customerDetails': {
-      'name': 'John Doe',
-      'company': 'Zeta Tech',
-      'phone': '9876543210',
-      'email': 'john.doe@zetatech.com',
-    },
-    'locationDetails': {
-      'city': 'Mumbai',
-      'state': 'Maharashtra',
-      'fullAddress': '123 Zeta Street, Tech Park',
-    },
-    'maintenanceContract': {
-      'annualContract': false,
-    },
-  },
+final List<Map<String, dynamic>> _devices = [ 
 ];
 
 
-  @override
-  void initState() {
-    super.initState();
-    if (widget.newDevice != null) {
-      _devices.insert(0, widget.newDevice!); // Add to top of the list
-    }
+@override
+void initState() {
+  super.initState();
+  if (widget.newDevice != null) {
+    _devices.isNotEmpty
+        ? _devices.insert(0, widget.newDevice!)
+        : _devices.add(widget.newDevice!);
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -100,33 +54,33 @@ final List<Map<String, dynamic>> _devices = [
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
-        onPressed: () => Navigator.pop(context),
-      ),
-      title: const Text(
-        'Devices',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16.0),
-          child: Image.asset(
-            'assets/images/vayujal_logo.png', // You'll need to add this logo
-            height: 40,
-          ),
-        ),
-      ],
-    );
-  }
+  // PreferredSizeWidget _buildAppBar() {
+  //   return AppBar(
+  //     backgroundColor: Colors.white,
+  //     elevation: 0,
+  //     leading: IconButton(
+  //       icon: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
+  //       onPressed: () => Navigator.pop(context),
+  //     ),
+  //     title: const Text(
+  //       'Devices',
+  //       style: TextStyle(
+  //         color: Colors.black,
+  //         fontSize: 24,
+  //         fontWeight: FontWeight.bold,
+  //       ),
+  //     ),
+  //     actions: [
+  //       Padding(
+  //         padding: const EdgeInsets.only(right: 16.0),
+  //         child: Image.asset(
+  //           'assets/images/vayujal_logo.png', // You'll need to add this logo
+  //           height: 40,
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildSearchAndRegisterSection() {
     return Padding(
