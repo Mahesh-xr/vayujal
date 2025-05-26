@@ -15,7 +15,7 @@ class AddDeviceScreen extends StatefulWidget {
 }
 
 class _AddDeviceScreenState extends State<AddDeviceScreen> {
-  int _currentIndex = 1; // Added state for current index
+  int _currentIndex = 0; // Added state for current index
 
   @override
   Widget build(BuildContext context) {
@@ -29,17 +29,13 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
       bottomNavigationBar: BottomNavigation(
         currentIndex: _currentIndex,
         onTap: (index) {
-          if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/alldevice');
-          } else {
-            setState(() {
-              _currentIndex = index;
-            });
-            // Navigate to other screens based on index
+          
             switch (index) {
               case 0:
                 Navigator.pushReplacementNamed(context, '/home');
                 break;
+              case 1:
+                Navigator.pushReplacementNamed(context, '/alldevice');
               case 2:
                 Navigator.pushReplacementNamed(context, '/profile');
                 break;
@@ -50,7 +46,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                 Navigator.pushReplacementNamed(context, '/notifications');
                 break;
             }
-          }
+          
         },
       ),
     );

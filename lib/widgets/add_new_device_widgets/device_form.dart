@@ -118,8 +118,8 @@ class _DeviceFormState extends State<DeviceForm> {
       // final adminAction = AdminAction();
 
       try {
-        if (widget.deviceToEdit != null && widget.deviceToEdit!['id'] != null) {
-          await AdminAction.editDevice(widget.deviceToEdit!['id'], formData);
+        if (widget.deviceToEdit != null) {
+          await AdminAction.editDevice(_serialNumberController.text, formData);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Device updated successfully!')),
           );
@@ -184,6 +184,7 @@ class _DeviceFormState extends State<DeviceForm> {
               ),
             ),
           ),
+           
         ],
       ),
     );

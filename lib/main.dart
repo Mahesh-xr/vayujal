@@ -2,13 +2,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:vayujal/firebase_options.dart';
 import 'package:vayujal/screens/all_devices.dart';
+import 'package:vayujal/screens/dashboard_screen.dart';
 import 'screens/add_device_screen.dart';
 
-
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // ✅ Required to initialize Flutter engine
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-);
+  );
 
   runApp(const MyApp());
 }
@@ -24,10 +25,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const AddDeviceScreen(),
-       routes: {
+      home: const DashboardScreen(),
+      routes: {
         '/alldevice': (context) => const DevicesScreen(),
-        
       },
       debugShowCheckedModeBanner: false,
     );

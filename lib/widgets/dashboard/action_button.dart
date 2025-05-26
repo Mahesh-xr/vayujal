@@ -1,0 +1,51 @@
+import 'package:flutter/material.dart';
+
+class ActionButton extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  const ActionButton({
+    Key? key,
+    required this.title,
+    required this.icon,
+    this.onPressed,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: onPressed ?? () {
+          print('$title button pressed');
+          // Add your navigation or action logic here
+          // Example: Navigator.pushNamed(context, '/register-awg');
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          elevation: 2,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

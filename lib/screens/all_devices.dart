@@ -1,10 +1,11 @@
-// screens/devices_screen.dart
 import 'package:flutter/material.dart';
 import 'package:vayujal/widgets/add_new_device_widgets/device_form.dart';
+import 'package:vayujal/widgets/navigations/bottom_navigation.dart';
 import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
 import 'package:vayujal/widgets/device_widgets/device_card.dart';
 import 'package:vayujal/widgets/device_widgets/filter_chip_widget.dart';
 import 'package:vayujal/widgets/device_widgets/search_bar_widget.dart';
+import 'package:vayujal/DatabaseACtion/AdminAction.dart'; 
 
 class DevicesScreen extends StatefulWidget {
   final Map<String, dynamic>? newDevice;
@@ -21,26 +22,35 @@ class _DevicesScreenState extends State<DevicesScreen> {
 
   final List<String> _filterOptions = ['AWG Model', 'AWG Serial Number'];
 
-final List<Map<String, dynamic>> _devices = [ 
-];
+  List<Map<String, dynamic>> _devices = [];
 
-
-@override
-void initState() {
-  super.initState();
-  if (widget.newDevice != null) {
-    _devices.isNotEmpty
-        ? _devices.insert(0, widget.newDevice!)
-        : _devices.add(widget.newDevice!);
+  @override
+  void initState() {
+    super.initState();
+    fetchDevices();
   }
-}
 
+  Future<void> fetchDevices() async {
+    try {
+      final fetchedDevices = await AdminAction.getAllDevices();
+
+      if (widget.newDevice != null) {
+        fetchedDevices.insert(0, widget.newDevice!);
+      }
+
+      setState(() {
+        _devices = fetchedDevices;
+      });
+    } catch (e) {
+      print('Error fetching devices: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      appBar: const CustomAppBar(title: 'Add New Device'),
+      appBar: const CustomAppBar(title: 'All Devices'),
       body: Column(
         children: [
           const SizedBox(height: 16),
@@ -54,34 +64,6 @@ void initState() {
     );
   }
 
-  // PreferredSizeWidget _buildAppBar() {
-  //   return AppBar(
-  //     backgroundColor: Colors.white,
-  //     elevation: 0,
-  //     leading: IconButton(
-  //       icon: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
-  //       onPressed: () => Navigator.pop(context),
-  //     ),
-  //     title: const Text(
-  //       'Devices',
-  //       style: TextStyle(
-  //         color: Colors.black,
-  //         fontSize: 24,
-  //         fontWeight: FontWeight.bold,
-  //       ),
-  //     ),
-  //     actions: [
-  //       Padding(
-  //         padding: const EdgeInsets.only(right: 16.0),
-  //         child: Image.asset(
-  //           'assets/images/vayujal_logo.png', // You'll need to add this logo
-  //           height: 40,
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
-
   Widget _buildSearchAndRegisterSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -91,14 +73,17 @@ void initState() {
             child: SearchBarWidget(
               controller: _searchController,
               onChanged: (value) {
-                // Handle search
+                // TODO: Implement search logic
               },
             ),
           ),
           const SizedBox(width: 12),
           ElevatedButton(
             onPressed: () {
-              // Handle register device
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DeviceForm()),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
@@ -151,31 +136,66 @@ void initState() {
   }
 
   Widget _buildDevicesList() {
+    if (_devices.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 16),
       itemCount: _devices.length,
       itemBuilder: (context, index) {
         final device = _devices[index];
+        final deviceInfo = device['deviceInfo'] ?? {};
+        final customerDetails = device['customerDetails'] ?? {};
+        final locationDetails = device['locationDetails'] ?? {};
+
         return DeviceCard(
-  deviceModel: device['deviceInfo']['model'],
-  serialNumber: device['deviceInfo']['serialNumber'],
-  customer: device['customerDetails']['company'],
-  location: device['locationDetails']['city'],
-  lastService: device['deviceInfo']['installationDate'],
-  onEdit: () {
-    Navigator.push(
+          deviceModel: deviceInfo['model'] ?? 'Unknown',
+          serialNumber: deviceInfo['serialNumber'] ?? 'N/A',
+          customer: customerDetails['company'] ?? 'Unknown',
+          location: locationDetails['city'] ?? 'Unknown',
+          lastService: deviceInfo['installationDate'] ?? 'N/A',
+          onEdit: () {
+            Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DeviceForm(deviceToEdit: device),
+        builder: (context) => Scaffold(
+          appBar: const CustomAppBar(title: 'Edit Device Details'),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: DeviceForm(deviceToEdit: device),
+          ),
+          bottomNavigationBar: BottomNavigation(
+        currentIndex: 0,
+        onTap: (index) {
+          
+            switch (index) {
+              case 0:
+                Navigator.pushReplacementNamed(context, '/home');
+                break;
+              case 1:
+                Navigator.pushReplacementNamed(context, '/alldevice');
+              case 2:
+                Navigator.pushReplacementNamed(context, '/profile');
+                break;
+              case 3:
+                Navigator.pushReplacementNamed(context, '/history');
+                break;
+              case 4:
+                Navigator.pushReplacementNamed(context, '/notifications');
+                break;
+            }
+          
+        },
+      ),
+        ),
       ),
     );
-  },
-  onService: () {
-    // Handle service
-    print('Service device: ${device['deviceInfo']['serialNumber']}');
-  },
-);
-
+          },
+          onService: () {
+            print('Service device: ${deviceInfo['serialNumber']}');
+          },
+        );
       },
     );
   }
