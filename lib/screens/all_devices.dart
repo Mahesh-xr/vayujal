@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vayujal/DatabaseAction/adminAction.dart';
+import 'package:vayujal/screens/new_service_request_page.dart';
 import 'package:vayujal/widgets/add_new_device_widgets/device_form.dart';
 import 'package:vayujal/widgets/navigations/bottom_navigation.dart';
 import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
@@ -29,7 +30,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
   };
   
   // Available filter options
-  final List<String> _modelOptions = ['VJ-Home', 'VJ-Plus', 'VJ-Grand', 'VJ-Ultra', 'VJ-Max'];
+  final List<String> _modelOptions = ['VJ - Home', 'VJ - Plus', 'VJ - Grand', 'VJ - Ultra', 'VJ - Max'];
   List<String> _cityOptions = [];
   List<String> _stateOptions = [];
 
@@ -369,24 +370,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
           customer: customerDetails['company'] ?? 'Unknown',
           location: locationDetails['city'] ?? 'Unknown',
           lastService: deviceInfo['installationDate'] ?? 'N/A',
-          onEdit: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Scaffold(
-                  appBar: const CustomAppBar(title: 'Edit Device Details'),
-                  body: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: DeviceForm(deviceToEdit: device),
-                  ),
-          
-                ),
-              ),
-            );
-          },
-          onService: () {
-            print('Service device: ${deviceInfo['serialNumber']}');
-          },
+          onEdit: () => _editDevice(device),
+          onService: () => _serviceDevice(device),
           onView: () => _viewDeviceDetails(device),
           onDelete: () => _deleteDevice(deviceInfo['serialNumber'] ?? ''),
         );
@@ -431,6 +416,37 @@ class _DevicesScreenState extends State<DevicesScreen> {
     );
   }
 
+
+  void _editDevice(Map<String, dynamic> device){
+    Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Scaffold(
+                  appBar: const CustomAppBar(title: 'Edit Device Details'),
+                  body: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: DeviceForm(deviceToEdit: device),
+                  ),
+          
+                ),
+              ),
+            );
+  }
+
+  void _serviceDevice(Map<String, dynamic> device){
+    Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Scaffold(
+                  body: 
+                   NewServiceRequestPage(deviceToService: device),
+                  ),
+          
+                ),
+              
+            );
+  }
+
   Widget _buildDeviceDetailsView(Map<String, dynamic> device) {
     final deviceInfo = device['deviceInfo'] ?? {};
     final customerDetails = device['customerDetails'] ?? {};
@@ -443,7 +459,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
         _buildDetailSection('Device Information', [
           _buildDetailRow('Model', deviceInfo['model'] ?? 'N/A'),
           _buildDetailRow('Serial Number', deviceInfo['serialNumber'] ?? 'N/A'),
-          _buildDetailRow('Dispenser Details', deviceInfo['dispenserDetails'] ?? 'N/A'),
+          _buildDetailRow('Dispenser', deviceInfo['dispenserDetails'] ?? 'N/A'),
           _buildDetailRow('Power Source', deviceInfo['powerSource'] ?? 'N/A'),
           _buildDetailRow('Installation Date', deviceInfo['installationDate'] ?? 'N/A'),
         ]),
@@ -473,6 +489,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
 
   Widget _buildDetailSection(String title, List<Widget> children) {
     return Card(
+      color: Colors.white,
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -484,7 +501,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue,
+                color: Colors.black,
               ),
             ),
             const SizedBox(height: 12),
@@ -507,15 +524,16 @@ class _DevicesScreenState extends State<DevicesScreen> {
               '$label:',
               style: const TextStyle(
                 fontWeight: FontWeight.w500,
-                color: Colors.grey,
+                color: Color.fromARGB(255, 95, 95, 95),
               ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontWeight: FontWeight.w400,
+              style:  TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[850],
               ),
             ),
           ),

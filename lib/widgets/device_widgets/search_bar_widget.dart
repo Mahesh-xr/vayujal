@@ -40,7 +40,7 @@ class SearchBarWidget extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: hintText,
                 hintStyle: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: const Color.fromARGB(255, 36, 35, 35),
                   fontSize: 16,
                 ),
                 border: InputBorder.none,

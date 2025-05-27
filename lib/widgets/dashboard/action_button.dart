@@ -15,11 +15,7 @@ class ActionButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: onPressed ?? () {
-          print('$title button pressed');
-          // Add your navigation or action logic here
-          // Example: Navigator.pushNamed(context, '/register-awg');
-        },
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,

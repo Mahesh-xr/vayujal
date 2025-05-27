@@ -78,6 +78,7 @@ class DeviceInformationSection extends StatelessWidget {
           // Serial Number
           CustomTextField(
             label: 'Compressor Serial Number',
+            enabled:false,
             controller: serialNumberController,
             validator: (value) {
               if (value == null || value.isEmpty) {

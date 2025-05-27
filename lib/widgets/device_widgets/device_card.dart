@@ -154,12 +154,15 @@ class DeviceCard extends StatelessWidget {
     return Row(
       children: [
         const SizedBox(width: 8),
-        Text(
-          '$label:',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black,
-            fontWeight: FontWeight.w500,
+        SizedBox(
+          width: 140,
+          child: Text(
+            '$label:',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         SizedBox(width:10,),

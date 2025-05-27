@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vayujal/screens/add_device_screen.dart';
+import 'package:vayujal/screens/all_devices.dart';
 import 'action_button.dart';
 
 class QuickActionsSection extends StatelessWidget {
@@ -38,7 +39,6 @@ class QuickActionsSection extends StatelessWidget {
           child: ActionButton(
             title: 'Register new AWG', 
             onPressed: () {
-                          print("got clicked");
 
 
               Navigator.pushReplacement(
@@ -50,11 +50,23 @@ class QuickActionsSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        const ActionButton(
+         ActionButton(
+          onPressed: () {
+            print('hi');
+          },
           title: 'View all Tasks', 
         ),
         const SizedBox(height: 12),
-        const ActionButton(
+        ActionButton(
+           onPressed: () {
+
+
+              Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DevicesScreen()),
+        );
+              
+            },
           title: 'View all Devices', 
         ),
       ],
