@@ -42,15 +42,34 @@ class _DeviceFormState extends State<DeviceForm> {
       _selectedPowerSource = deviceInfo['powerSource'];
       _uploadedPhotos = List<String>.from(deviceInfo['uploadedPhotos'] ?? []);
 
+      // Populate customer details after the widget is built
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _customerDetailsKey.currentState?.nameController.text = customer['name'];
-        _customerDetailsKey.currentState?.companyController.text = customer['company'];
-        _customerDetailsKey.currentState?.phoneController.text = customer['phone'];
-        _customerDetailsKey.currentState?.emailController.text = customer['email'];
-        _customerDetailsKey.currentState?.cityController.text = location['city'];
-        _customerDetailsKey.currentState?.stateController.text = location['state'];
-        _customerDetailsKey.currentState?.fullAddressController.text = location['fullAddress'];
-        _customerDetailsKey.currentState?.enableMaintenanceContract = maintenance['annualContract'];
+        final customerState = _customerDetailsKey.currentState;
+        if (customerState != null) {
+          // Basic customer info
+          customerState.nameController.text = customer['name'] ?? '';
+          customerState.companyController.text = customer['company'] ?? '';
+          customerState.phoneController.text = customer['phone'] ?? '';
+          customerState.emailController.text = customer['email'] ?? '';
+          
+          // Location details
+          customerState.cityController.text = location['city'] ?? '';
+          customerState.stateController.text = location['state'] ?? '';
+          customerState.fullAddressController.text = location['fullAddress'] ?? '';
+          
+          // Maintenance contract details
+          customerState.enableMaintenanceContract = maintenance['annualContract'] ?? false;
+          
+          // AMC details if maintenance contract is enabled
+          if (maintenance['annualContract'] == true) {
+            customerState.selectedAmcType = maintenance['amcType'];
+            customerState.amcStartDateController.text = maintenance['amcStartDate'] ?? '';
+            customerState.amcEndDateController.text = maintenance['amcEndDate'] ?? '';
+          }
+          
+          // Trigger setState to refresh the UI
+          customerState.setState(() {});
+        }
       });
     }
   }
@@ -90,6 +109,17 @@ class _DeviceFormState extends State<DeviceForm> {
     if (_formKey.currentState!.validate()) {
       final customerState = _customerDetailsKey.currentState!;
 
+      // Validate customer details including AMC fields
+      if (!customerState.validate()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please fill in all required fields correctly'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       final formData = {
         'deviceInfo': {
           'model': _selectedModel,
@@ -112,22 +142,31 @@ class _DeviceFormState extends State<DeviceForm> {
         },
         'maintenanceContract': {
           'annualContract': customerState.enableMaintenanceContract,
+          'amcType': customerState.selectedAmcType,
+          'amcStartDate': customerState.amcStartDateController.text,
+          'amcEndDate': customerState.amcEndDateController.text,
         }
       };
 
-      // final adminAction = AdminAction();
+      // Debug print to see all form data
+      print('Complete Form Data: $formData');
 
       try {
         if (widget.deviceToEdit != null) {
           await AdminAction.editDevice(_serialNumberController.text, formData);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Device updated successfully!')),
+            const SnackBar(
+              content: Text('Device updated successfully!'),
+              backgroundColor: Colors.green,
+            ),
           );
         } else {
           await AdminAction.addNewDevice(formData);
-          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Device registered successfully!')),
+            const SnackBar(
+              content: Text('Device registered successfully!'),
+              backgroundColor: Color.fromARGB(255, 221, 224, 222),
+            ),
           );
         }
 
@@ -137,7 +176,10 @@ class _DeviceFormState extends State<DeviceForm> {
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -170,7 +212,7 @@ class _DeviceFormState extends State<DeviceForm> {
             child: ElevatedButton(
               onPressed: _printAllFormData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: const Color.fromARGB(255, 14, 15, 15),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -184,7 +226,6 @@ class _DeviceFormState extends State<DeviceForm> {
               ),
             ),
           ),
-           
         ],
       ),
     );

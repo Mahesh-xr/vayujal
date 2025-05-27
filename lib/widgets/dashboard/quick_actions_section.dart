@@ -37,7 +37,6 @@ class QuickActionsSection extends StatelessWidget {
           },
           child: ActionButton(
             title: 'Register new AWG', 
-            icon: Icons.add_circle,
             onPressed: () {
                           print("got clicked");
 
@@ -53,12 +52,10 @@ class QuickActionsSection extends StatelessWidget {
         const SizedBox(height: 12),
         const ActionButton(
           title: 'View all Tasks', 
-          icon: Icons.task_alt,
         ),
         const SizedBox(height: 12),
         const ActionButton(
           title: 'View all Devices', 
-          icon: Icons.devices,
         ),
       ],
     );

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import '../widgets/navigations/custom_app_bar.dart';
 import '../widgets/add_new_device_widgets/device_form.dart';
-import '../widgets/navigations/bottom_navigation.dart';
 
-// ...
 
 
 class AddDeviceScreen extends StatefulWidget {
-  // Changed to StatefulWidget
   const AddDeviceScreen({super.key});
 
   @override
@@ -26,29 +23,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
         padding: EdgeInsets.all(16.0),
         child: DeviceForm(),
       ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          
-            switch (index) {
-              case 0:
-                Navigator.pushReplacementNamed(context, '/home');
-                break;
-              case 1:
-                Navigator.pushReplacementNamed(context, '/alldevice');
-              case 2:
-                Navigator.pushReplacementNamed(context, '/profile');
-                break;
-              case 3:
-                Navigator.pushReplacementNamed(context, '/history');
-                break;
-              case 4:
-                Navigator.pushReplacementNamed(context, '/notifications');
-                break;
-            }
-          
-        },
-      ),
+      
     );
   }
 }

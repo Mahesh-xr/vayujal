@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 
 class ActionButton extends StatelessWidget {
   final String title;
-  final IconData icon;
   final VoidCallback? onPressed;
 
   const ActionButton({
     Key? key,
     required this.title,
-    required this.icon,
     this.onPressed,
   }) : super(key: key);
 
@@ -34,7 +32,7 @@ class ActionButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20),
+            
             const SizedBox(width: 8),
             Text(
               title,

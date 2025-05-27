@@ -1,4 +1,3 @@
-// widgets/device_card.dart
 import 'package:flutter/material.dart';
 
 class DeviceCard extends StatelessWidget {
@@ -7,139 +6,238 @@ class DeviceCard extends StatelessWidget {
   final String customer;
   final String location;
   final String lastService;
-  final VoidCallback? onEdit;
-  final VoidCallback? onService;
+  final VoidCallback onEdit;
+  final VoidCallback onService;
+  final VoidCallback onView;
+  final VoidCallback onDelete;
 
   const DeviceCard({
-    Key? key,
+    super.key,
     required this.deviceModel,
     required this.serialNumber,
     required this.customer,
     required this.location,
     required this.lastService,
-    this.onEdit,
-    this.onService,
-  }) : super(key: key);
+    required this.onEdit,
+    required this.onService,
+    required this.onView,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
+      elevation: 2,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            deviceModel,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            serialNumber,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildInfoRow('Customer:', customer),
-          const SizedBox(height: 8),
-          _buildInfoRow('Location:', location),
-          const SizedBox(height: 8),
-          _buildInfoRow('Last Service:', lastService),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: onEdit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Edit',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with model name, view button, and delete icon
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    deviceModel,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: onService,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                // View Button
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.black,
+                      width: 1.5,
                     ),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
-                    'Service',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                  child: InkWell(
+                    onTap: onView,
+                    borderRadius: BorderRadius.circular(6),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                         
+                          Text(
+                            'View',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(width: 8),
+                // Delete Button
+                InkWell(
+                  onTap: () => _showDeleteConfirmation(context),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    
+                    child: Icon(
+                      Icons.delete,
+                      color: Colors.black,
+                      size: 25,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            // Device details
+            _buildDetailRow('Serial Number', serialNumber),
+            const SizedBox(height: 8),
+            _buildDetailRow('Customer', customer),
+            const SizedBox(height: 8),
+            _buildDetailRow('Location', location),
+            const SizedBox(height: 8),
+            _buildDetailRow('Last Service', lastService),
+            const SizedBox(height: 16),
+            
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: onEdit,
+                    label: const Text('Edit',
+                    style: TextStyle(
+                      fontSize: 18
+                    ),),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor:  Colors.black,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: onService,
+          
+                    label: const Text('Service',
+                    style: TextStyle(
+                      fontSize: 18
+                    ),),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildDetailRow(String label, String value) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 120,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
-            ),
+        const SizedBox(width: 8),
+        Text(
+          '$label:',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.black,
+            fontWeight: FontWeight.w500,
           ),
         ),
+        SizedBox(width:10,),
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
-              color: Colors.grey.shade600,
+              color: Color.fromARGB(221, 92, 91, 91),
+              fontWeight: FontWeight.w600,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.warning, color: Colors.black),
+              SizedBox(width: 8),
+              Text('Delete Device'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Are you sure you want to delete this device?'),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Model: $deviceModel', style: const TextStyle(fontWeight: FontWeight.w500)),
+                    Text('Serial: $serialNumber'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'This action cannot be undone.',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onDelete();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
