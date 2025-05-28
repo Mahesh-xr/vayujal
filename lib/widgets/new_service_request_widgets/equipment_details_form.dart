@@ -8,7 +8,7 @@ class EquipmentDetailsForm extends StatefulWidget {
   final TextEditingController cityController;
   final TextEditingController stateController;
   final TextEditingController ownerController;
-  final TextEditingController serialNumberController;
+  final TextEditingController awgSerialNumberController;
   final bool demoMode;
 
   const EquipmentDetailsForm({
@@ -17,7 +17,7 @@ class EquipmentDetailsForm extends StatefulWidget {
     required this.cityController,
     required this.stateController,
     required this.ownerController,
-    required this.serialNumberController,
+    required this.awgSerialNumberController,
     this.demoMode = false,
   });
 
@@ -74,7 +74,7 @@ class _EquipmentDetailsFormState extends State<EquipmentDetailsForm> {
     widget.cityController.text = equipment['city']!;
     widget.stateController.text = equipment['state']!;
     widget.ownerController.text = equipment['owner']!;
-    widget.serialNumberController.text = equipment['serialNumber']!;
+    widget.awgSerialNumberController.text = equipment['awgSerialNumber']!;
   }
 
   @override
@@ -141,8 +141,8 @@ class _EquipmentDetailsFormState extends State<EquipmentDetailsForm> {
           ),
           const SizedBox(height: 12),
           CustomTextField(
-            label: 'Serial Number',
-            controller: widget.serialNumberController,
+            label: 'AWG Serial Number',
+            controller: widget.awgSerialNumberController,
             validator: (value) => (value == null || value.isEmpty)
                 ? 'Please enter serial number'
                 : null,

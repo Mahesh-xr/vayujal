@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class DeviceCard extends StatelessWidget {
   final String deviceModel;
-  final String serialNumber;
+  final String awgSerialNumber;
+
   final String customer;
   final String location;
   final String lastService;
@@ -13,8 +14,8 @@ class DeviceCard extends StatelessWidget {
 
   const DeviceCard({
     super.key,
+    required this.awgSerialNumber,
     required this.deviceModel,
-    required this.serialNumber,
     required this.customer,
     required this.location,
     required this.lastService,
@@ -102,7 +103,7 @@ class DeviceCard extends StatelessWidget {
             const SizedBox(height: 16),
             
             // Device details
-            _buildDetailRow('Serial Number', serialNumber),
+            _buildDetailRow('AWG Serial Number', awgSerialNumber),
             const SizedBox(height: 8),
             _buildDetailRow('Customer', customer),
             const SizedBox(height: 8),
@@ -209,7 +210,7 @@ class DeviceCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Model: $deviceModel', style: const TextStyle(fontWeight: FontWeight.w500)),
-                    Text('Serial: $serialNumber'),
+                    Text('Serial: $awgSerialNumber'),
                   ],
                 ),
               ),

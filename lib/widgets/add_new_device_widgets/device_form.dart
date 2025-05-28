@@ -16,13 +16,13 @@ class DeviceForm extends StatefulWidget {
 class _DeviceFormState extends State<DeviceForm> {
   final _formKey = GlobalKey<FormState>();
   final _serialNumberController = TextEditingController();
+   final _awgSerialNumberController = TextEditingController();
   final _installationDateController = TextEditingController();
   final _customerDetailsKey = GlobalKey<CustomerDetailsSectionState>();
 
   String? _selectedModel;
   String? _selectedDispenser;
   String? _selectedPowerSource;
-  List<String> _uploadedPhotos = [];
 
   @override
   void initState() {
@@ -36,11 +36,12 @@ class _DeviceFormState extends State<DeviceForm> {
       final maintenance = device['maintenanceContract'];
 
       _selectedModel = deviceInfo['model'];
+      _awgSerialNumberController.text = deviceInfo['awgSerialNumber'];
       _serialNumberController.text = deviceInfo['serialNumber'];
       _installationDateController.text = deviceInfo['installationDate'];
       _selectedDispenser = deviceInfo['dispenserDetails'];
       _selectedPowerSource = deviceInfo['powerSource'];
-      _uploadedPhotos = List<String>.from(deviceInfo['uploadedPhotos'] ?? []);
+     
 
       // Populate customer details after the widget is built
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -81,11 +82,7 @@ class _DeviceFormState extends State<DeviceForm> {
     super.dispose();
   }
 
-  void _handlePhotoUpload(List<String> photos) {
-    setState(() {
-      _uploadedPhotos = photos;
-    });
-  }
+ 
 
   void _handleModelSelection(String? model) {
     setState(() {
@@ -123,11 +120,12 @@ class _DeviceFormState extends State<DeviceForm> {
       final formData = {
         'deviceInfo': {
           'model': _selectedModel,
+          'awgSerialNumber':_awgSerialNumberController.text,
           'serialNumber': _serialNumberController.text,
           'dispenserDetails': _selectedDispenser ?? '',
           'powerSource': _selectedPowerSource ?? '',
           'installationDate': _installationDateController.text,
-          'uploadedPhotos': _uploadedPhotos,
+          
         },
         'customerDetails': {
           'name': customerState.nameController.text,
@@ -153,7 +151,7 @@ class _DeviceFormState extends State<DeviceForm> {
 
       try {
         if (widget.deviceToEdit != null) {
-          await AdminAction.editDevice(_serialNumberController.text, formData);
+          await AdminAction.editDevice(_awgSerialNumberController.text, formData);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Device updated successfully!'),
@@ -194,15 +192,15 @@ class _DeviceFormState extends State<DeviceForm> {
         children: [
           DeviceInformationSection(
             selectedModel: _selectedModel,
-            uploadedPhotos: _uploadedPhotos,
+
+            awgSerialNumberController: _awgSerialNumberController,
             serialNumberController: _serialNumberController,
             selectedDispenser: _selectedDispenser,
             selectedPowerSource: _selectedPowerSource,
             installationDateController: _installationDateController,
             onModelChanged: _handleModelSelection,
-            onPhotosUploaded: _handlePhotoUpload,
             onDispenserChanged: _handleDispenserSelection,
-            onPowerSourceChanged: _handlePowerSourceSelection,
+            onPowerSourceChanged: _handlePowerSourceSelection, 
           ),
           const SizedBox(height: 24),
           CustomerDetailsSection(key: _customerDetailsKey),

@@ -23,7 +23,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
   final _cityController = TextEditingController();
   final _stateController = TextEditingController();
   final _ownerController = TextEditingController();
-  final _serialNumberController = TextEditingController();
+  final _awgSerialNumberController = TextEditingController();
 
   // Customer Details Controllers
   final _customerIdController = TextEditingController();
@@ -60,7 +60,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
 
     // Equipment data from device
     _modelController.text = deviceInfo['model'] ?? '';
-    _serialNumberController.text = deviceInfo['serialNumber'] ?? '';
+    _awgSerialNumberController.text = deviceInfo['awgSerialNumber'] ?? '';
     _cityController.text = locationDetails['city'] ?? '';
     _stateController.text = locationDetails['state'] ?? '';
     _ownerController.text = customerDetails['name'] ?? '';
@@ -91,7 +91,6 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
     _cityController.dispose();
     _stateController.dispose();
     _ownerController.dispose();
-    _serialNumberController.dispose();
     _customerIdController.dispose();
     _nameController.dispose();
     _companyController.dispose();
@@ -121,7 +120,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
       // Print all form data to console for debugging
       debugPrint('=== Service Request Details ===');
       debugPrint('Equipment Model: ${_modelController.text}');
-      debugPrint('Serial Number: ${_serialNumberController.text}');
+      debugPrint('AWG Serial Number: ${_awgSerialNumberController.text}');
       debugPrint('Location: ${_cityController.text}, ${_stateController.text}');
       debugPrint('Customer: ${_nameController.text} (${_companyController.text})');
       debugPrint('Contact: ${_phoneController.text} | ${_emailController.text}');
@@ -155,7 +154,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
                 cityController: _cityController,
                 stateController: _stateController,
                 ownerController: _ownerController,
-                serialNumberController: _serialNumberController,
+                awgSerialNumberController: _awgSerialNumberController,
               ),
               const SizedBox(height: 24),
               CustomerDetailsForm(

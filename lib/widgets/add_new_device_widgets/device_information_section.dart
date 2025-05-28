@@ -1,31 +1,28 @@
 import 'package:flutter/material.dart';
 import 'custom_dropdown.dart';
-import 'photo_upload_widget.dart';
 import 'custom_text_field.dart';
 import 'date_picker_field.dart';
 
 class DeviceInformationSection extends StatelessWidget {
   final String? selectedModel;
-  final List<String> uploadedPhotos;
   final TextEditingController serialNumberController;
+  final TextEditingController awgSerialNumberController;
   final String? selectedDispenser;
   final String? selectedPowerSource;
   final TextEditingController installationDateController;
   final Function(String?) onModelChanged;
-  final Function(List<String>) onPhotosUploaded;
   final Function(String?) onDispenserChanged;
   final Function(String?) onPowerSourceChanged;
 
   const DeviceInformationSection({
     Key? key,
     required this.selectedModel,
-    required this.uploadedPhotos,
     required this.serialNumberController,
+    required this.awgSerialNumberController,
     required this.selectedDispenser,
     required this.selectedPowerSource,
     required this.installationDateController,
     required this.onModelChanged,
-    required this.onPhotosUploaded,
     required this.onDispenserChanged,
     required this.onPowerSourceChanged,
   }) : super(key: key);
@@ -67,18 +64,25 @@ class DeviceInformationSection extends StatelessWidget {
             onChanged: onModelChanged,
           ),
           const SizedBox(height: 16),
-          
-          // Photo Upload
-          PhotoUploadWidget(
-            uploadedPhotos: uploadedPhotos,
-            onPhotosUploaded: onPhotosUploaded,
+
+                CustomTextField(
+            label: 'AWG Serial Number',
+            
+            controller: awgSerialNumberController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter serial number';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
+        
           
           // Serial Number
           CustomTextField(
             label: 'Compressor Serial Number',
-            enabled:false,
+            
             controller: serialNumberController,
             validator: (value) {
               if (value == null || value.isEmpty) {

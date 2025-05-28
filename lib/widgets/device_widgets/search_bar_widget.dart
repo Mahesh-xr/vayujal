@@ -9,7 +9,7 @@ class SearchBarWidget extends StatelessWidget {
 
   const SearchBarWidget({
     Key? key,
-    this.hintText = 'Search Devices',
+    this.hintText = 'AWG Serial Number',
     this.controller,
     this.onChanged,
     this.onClear,

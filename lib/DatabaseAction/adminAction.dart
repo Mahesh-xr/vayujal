@@ -7,7 +7,7 @@ class AdminAction {
   /// Adds a new device to Firestore
   static Future addNewDevice(Map<String, dynamic> deviceData) async {
     try {
-      String serialNumber = deviceData['deviceInfo']['serialNumber'];
+      String serialNumber = deviceData['deviceInfo']['awgSerialNumber'];
       await _firestore.collection('devices').doc(serialNumber).set(deviceData);
       print("✅ Device added successfully: $serialNumber");
     } catch (e) {

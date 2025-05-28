@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:vayujal/firebase_options.dart';
 import 'package:vayujal/screens/all_devices.dart';
 import 'package:vayujal/screens/dashboard_screen.dart';
-import 'screens/add_device_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // ✅ Required to initialize Flutter engine
