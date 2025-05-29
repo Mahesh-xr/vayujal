@@ -289,9 +289,9 @@ class _DevicesScreenState extends State<DevicesScreen> {
             children: [
               Expanded(child: _buildFilterDropdown('AWG Model', 'model', _modelOptions)),
               const SizedBox(width: 8),
-              Expanded(child: _buildFilterDropdown('City', 'city', _cityOptions)),
-              const SizedBox(width: 8),
               Expanded(child: _buildFilterDropdown('State', 'state', _stateOptions)),
+              const SizedBox(width: 8),
+              Expanded(child: _buildFilterDropdown('City', 'city', _cityOptions)),
             ],
           ),
           if (_hasActiveFilters()) ...[

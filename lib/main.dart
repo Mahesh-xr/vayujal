@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:vayujal/firebase_options.dart';
 import 'package:vayujal/screens/all_devices.dart';
 import 'package:vayujal/screens/dashboard_screen.dart';
+import 'package:vayujal/screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // ✅ Required to initialize Flutter engine
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const DashboardScreen(),
+      home: const SplashScreen(),
       routes: {
     '/home': (context) => const DashboardScreen(),
     '/alldevice': (context) => const DevicesScreen(),

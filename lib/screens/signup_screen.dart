@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login_screen.dart';
@@ -100,7 +101,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Image.asset(
-              'images/Logo_v.png',
+              "assets/images/ayujal_logo.png",
               width: 100,
               height: 100,
               errorBuilder: (context, error, stackTrace) {
@@ -307,5 +308,3 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 }
 
-class UserCredential {
-}

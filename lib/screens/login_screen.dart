@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vayujal/screens/dashboard_screen.dart';
 import 'package:vayujal/screens/signup_screen.dart';
@@ -92,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Image.asset('images/Logo_v.png', width: 100, height: 100),
+            child: Image.asset("assets/images/ayujal_logo.png", width: 100, height: 100),
           ),
         ],
       ),

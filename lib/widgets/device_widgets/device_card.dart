@@ -156,23 +156,29 @@ class DeviceCard extends StatelessWidget {
       children: [
         const SizedBox(width: 8),
         SizedBox(
-          width: 140,
+          width: 110,
           child: Text(
-            '$label:',
+            '$label',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               color: Colors.black,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
+        Text(":",
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 18,
+          fontWeight: FontWeight.bold
+        ),),
         SizedBox(width:10,),
         Expanded(
           child: Text(
             value,
             style: const TextStyle(
               fontSize: 16,
-              color: Color.fromARGB(221, 92, 91, 91),
+              color: Color.fromARGB(221, 70, 69, 69),
               fontWeight: FontWeight.w600,
             ),
             overflow: TextOverflow.ellipsis,
