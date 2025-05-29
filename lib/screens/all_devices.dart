@@ -227,25 +227,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
       ),
       bottomNavigationBar: BottomNavigation(
         currentIndex: 1,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacementNamed(context, '/home');
-              break;
-            case 1:
-              Navigator.pushReplacementNamed(context, '/alldevice');
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/profile');
-              break;
-            case 3:
-              Navigator.pushReplacementNamed(context, '/history');
-              break;
-            case 4:
-              Navigator.pushReplacementNamed(context, '/notifications');
-              break;
-          }
-        },
+        onTap:(currentIndex) => BottomNavigation.navigateTo(currentIndex, context),
+        
       ),
     );
   }

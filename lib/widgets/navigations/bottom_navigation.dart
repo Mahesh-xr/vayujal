@@ -10,6 +10,31 @@ class BottomNavigation extends StatelessWidget {
     required this.onTap, // Require the callback
   }) : super(key: key);
 
+
+  static void navigateTo(int index, BuildContext context){
+    
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/alldevice');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/profile');
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/history');
+        break;
+      case 4:
+        Navigator.pushReplacementNamed(context, '/notifications');
+        break;
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
@@ -42,4 +67,9 @@ class BottomNavigation extends StatelessWidget {
       ],
     );
   }
+   
+  
+
 }
+
+

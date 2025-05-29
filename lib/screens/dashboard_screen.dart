@@ -16,27 +16,7 @@ class DashboardScreen extends StatelessWidget {
       body: _buildMainContent(),
       bottomNavigationBar: BottomNavigation(
       currentIndex: 0, // 'Devices' tab index
-      onTap: (index) {
-    
-
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, '/home');
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/alldevice');
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/profile');
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, '/history');
-        break;
-      case 4:
-        Navigator.pushReplacementNamed(context, '/notifications');
-        break;
-    }
-  },
+      onTap:(currentIndex) => BottomNavigation.navigateTo(currentIndex, context) ,
 ),
 
     );
@@ -44,6 +24,7 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildMainContent() {
     return const SingleChildScrollView(
+      
       padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
