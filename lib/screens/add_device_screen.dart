@@ -12,7 +12,7 @@ class AddDeviceScreen extends StatefulWidget {
 }
 
 class _AddDeviceScreenState extends State<AddDeviceScreen> {
-  int _currentIndex = 0; // Added state for current index
+   // Added state for current index
 
   @override
   Widget build(BuildContext context) {

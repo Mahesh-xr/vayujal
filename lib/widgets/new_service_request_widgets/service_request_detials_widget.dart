@@ -16,6 +16,7 @@ class ServiceRequestDetailsWidget extends StatelessWidget {
   final Function(String?) onAssignedToChanged;
   final Function(DateTime) onAddressByDateChanged;
   final String? Function(String?)? commentValidator;
+  final List<Map<String, dynamic>> techs;
 
   const ServiceRequestDetailsWidget({
     super.key,
@@ -28,7 +29,9 @@ class ServiceRequestDetailsWidget extends StatelessWidget {
     required this.onCustomerComplaintChanged,
     required this.onAssignedToChanged,
     required this.onAddressByDateChanged,
+    required this.techs, 
     this.commentValidator,
+   
   });
 
   @override
@@ -107,7 +110,7 @@ class ServiceRequestDetailsWidget extends StatelessWidget {
               CustomDropdown(
                 value: assignedTo,
                 hint: 'Name ▼',
-                items: const ['Technician 1', 'Technician 2', 'Technician 3'],
+                items: techs,
                 onChanged: onAssignedToChanged, label: '',
               ),
               

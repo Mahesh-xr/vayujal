@@ -8,13 +8,13 @@ class CommentTextArea extends StatelessWidget {
   final String? Function(String?)? validator;
 
   const CommentTextArea({
-    Key? key,
+    super.key,
     required this.controller,
     this.label = 'Comment / Complaint',
     this.hintText = 'Enter your text here', // default hint
     this.maxLines = 4,
     this.validator,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,7 @@ class CommentTextArea extends StatelessWidget {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.grey[50],
-            hintText: hintText, // ✅ Use the passed hintText here
+            hintText: 'Complaint', // ✅ Use the passed hintText here
             hintStyle: TextStyle(
               color: Colors.grey[500],
               fontSize: 16,

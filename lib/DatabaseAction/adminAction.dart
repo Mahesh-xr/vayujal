@@ -4,6 +4,31 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class AdminAction {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+
+
+  
+
+static Future<List<Map<String, dynamic>>> getAllTechnicians() async {
+  try {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('technicians')
+        .get();
+
+    List<Map<String, dynamic>> technicians = snapshot.docs.map((doc) {
+      return {
+        'name': doc['fullName'] ?? '',
+        'empId': doc['employeeId'] ?? '',
+      };
+    }).toList();
+
+    return technicians;
+  } catch (e) {
+    print("Error fetching technicians: $e");
+    return [];
+  }
+}
+
+
   /// Adds a new device to Firestore
   static Future addNewDevice(Map<String, dynamic> deviceData) async {
     try {

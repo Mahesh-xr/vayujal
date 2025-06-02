@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class CustomTextField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
@@ -9,14 +10,14 @@ class CustomTextField extends StatelessWidget {
   bool enabled;
 
    CustomTextField({
-    Key? key,
+    super.key,
     required this.label,
     required this.controller,
     this.validator,
     this.enabled = true,
     this.keyboardType,
     this.maxLines = 1,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

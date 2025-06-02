@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vayujal/DatabaseAction/adminAction.dart';
 import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
 import 'package:vayujal/widgets/new_service_request_widgets/customer_detials_form.dart';
 import 'package:vayujal/widgets/new_service_request_widgets/equipment_details_form.dart';
@@ -16,7 +17,7 @@ class NewServiceRequestPage extends StatefulWidget {
 
 class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
   final _formKey = GlobalKey<FormState>();
-  int _selectedBottomNavIndex = 0;
+ 
 
   // Equipment Details Controllers
   final _modelController = TextEditingController();
@@ -38,11 +39,13 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
   bool _customerComplaint = false; // Default to true for demo
   String? _assignedTo = 'Tech Team A'; // Default assignment
   DateTime? _addressByDate = DateTime.now().add(const Duration(days: 2)); // Default 2 days from now
-
+  late List<Map<String, dynamic>> techs;
   @override
   void initState() {
     super.initState();
+
     _loadData();
+    loadTechnicians();
   }
 
   void _loadData() {
@@ -52,6 +55,14 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
     }
     // If no device is provided, leave fields empty for manual entry
   }
+
+  void loadTechnicians() async {
+  techs = await AdminAction.getAllTechnicians();
+  techs.forEach((tech) {
+    print("Technician: ${tech['name']} (Emp ID: ${tech['empId']})");
+  });
+}
+
 
   void _loadDeviceData(Map<String, dynamic> device) {
     final deviceInfo = device['deviceInfo'] ?? {};
@@ -74,7 +85,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
     // Generate customer ID based on serial number or timestamp
     final serialNumber = deviceInfo['serialNumber'] ?? '';
     if (serialNumber.isNotEmpty) {
-      _customerIdController.text = 'CUST_${serialNumber}';
+      _customerIdController.text = 'CUST_$serialNumber';
     } else {
       _customerIdController.text = 'CUST_${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
     }
@@ -82,7 +93,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
     // SR Details - pre-fill with device context
     final deviceModel = deviceInfo['model'] ?? 'device';
     final deviceSerial = deviceInfo['serialNumber'] ?? 'N/A';
-    _commentController.text = 'Service request for $deviceModel (Serial: $deviceSerial)';
+   
   }
 
   @override
@@ -100,11 +111,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
     super.dispose();
   }
 
-  void _onBottomNavTap(int index) {
-    setState(() {
-      _selectedBottomNavIndex = index;
-    });
-  }
+
 
   void _onSubmit() {
     if (_formKey.currentState!.validate()) {
@@ -162,10 +169,10 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
                 companyController: _companyController,
                 phoneController: _phoneController,
                 emailController: _emailController,
-                customerIdController: _customerIdController,
               ),
               const SizedBox(height: 24),
               ServiceRequestDetailsWidget(
+                techs: techs,
                 commentController: _commentController,
                 generalMaintenance: _generalMaintenance,
                 customerComplaint: _customerComplaint,
