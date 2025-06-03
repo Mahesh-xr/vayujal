@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:vayujal/DatabaseAction/adminAction.dart';
 import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
 import 'package:vayujal/widgets/new_service_request_widgets/customer_detials_form.dart';
-import 'package:vayujal/widgets/new_service_request_widgets/equipment_details_form.dart';
+import 'package:vayujal/widgets/new_service_request_widgets/equipment_details_form.dart.dart';
 import 'package:vayujal/widgets/new_service_request_widgets/service_request_detials_widget.dart';
 import 'package:vayujal/widgets/new_service_request_widgets/submit_botton.dart';
 
@@ -16,8 +18,7 @@ class NewServiceRequestPage extends StatefulWidget {
 
 class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
   final _formKey = GlobalKey<FormState>();
-  int _selectedBottomNavIndex = 0;
-
+  
   // Equipment Details Controllers
   final _modelController = TextEditingController();
   final _cityController = TextEditingController();
@@ -35,22 +36,55 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
   // SR Details Controllers
   final _commentController = TextEditingController();
   bool _generalMaintenance = false;
-  bool _customerComplaint = false; // Default to true for demo
-  String? _assignedTo = 'Tech Team A'; // Default assignment
-  DateTime? _addressByDate = DateTime.now().add(const Duration(days: 2)); // Default 2 days from now
+  bool _customerComplaint = false;
+  String? _assignedTo;
+  DateTime? _addressByDate = DateTime.now().add(const Duration(days: 2));
+
+  // Technician dropdown data
+  List<Map<String, dynamic>> _technicians = [];
+  bool _isLoadingTechnicians = true;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _loadTechnicians();
   }
 
   void _loadData() {
     if (widget.deviceToService != null) {
-      // Load data from the selected device
       _loadDeviceData(widget.deviceToService!);
     }
-    // If no device is provided, leave fields empty for manual entry
+  }
+
+  Future<void> _loadTechnicians() async {
+    try {
+      setState(() {
+        _isLoadingTechnicians = true;
+      });
+      
+      List<Map<String, dynamic>> techs = await AdminAction.getAllTechnicians();
+      
+      setState(() {
+        _technicians = techs;
+        _isLoadingTechnicians = false;
+        
+        // Set default assignment if technicians are available
+        if (techs.isNotEmpty && _assignedTo == null) {
+          _assignedTo = techs.first['empId'];
+        }
+      });
+      
+      // Debug print
+      techs.forEach((tech) {
+        print("Technician: ${tech['name']} (Emp ID: ${tech['empId']})");
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingTechnicians = false;
+      });
+      print("Error loading technicians: $e");
+    }
   }
 
   void _loadDeviceData(Map<String, dynamic> device) {
@@ -85,6 +119,100 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
     _commentController.text = 'Service request for $deviceModel (Serial: $deviceSerial)';
   }
 
+  // Widget for technician dropdown
+  Widget _buildTechnicianDropdown() {
+    return Card(
+      color:Colors.white,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Assign Technician',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (_isLoadingTechnicians)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (_technicians.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning, color: Colors.orange.shade600),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'No technicians available. Please add technicians first.',
+                        style: TextStyle(color: Colors.orange.shade800),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _loadTechnicians,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              )
+            else
+              DropdownButtonFormField<String>(
+                value: _assignedTo,
+                decoration: const InputDecoration(
+                  labelText: 'Select Technician',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+                items: [
+                  // Option for unassigned
+                  const DropdownMenuItem<String>(
+                    value: null,
+                    child: Text('Unassigned'),
+                  ),
+                  // Technician options
+                  ..._technicians.map((technician) {
+                    return DropdownMenuItem<String>(
+                      value: technician['empId'],
+                      child: Text(
+                        '${technician['name']} (${technician['empId']})',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                ],
+                onChanged: (String? value) {
+                  setState(() {
+                    _assignedTo = value;
+                  });
+                },
+                validator: (value) {
+                  // Optional: Make assignment mandatory
+                  // if (value == null || value.isEmpty) {
+                  //   return 'Please select a technician';
+                  // }
+                  return null;
+                },
+                hint: const Text('Choose a technician'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _modelController.dispose();
@@ -100,37 +228,114 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
     super.dispose();
   }
 
-  void _onBottomNavTap(int index) {
-    setState(() {
-      _selectedBottomNavIndex = index;
-    });
-  }
-
-  void _onSubmit() {
+  void _onSubmit() async {
     if (_formKey.currentState!.validate()) {
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Service request created successfully!'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 3),
-        ),
-      );
+      try {
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        );
 
-      // Print all form data to console for debugging
-      debugPrint('=== Service Request Details ===');
-      debugPrint('Equipment Model: ${_modelController.text}');
-      debugPrint('AWG Serial Number: ${_awgSerialNumberController.text}');
-      debugPrint('Location: ${_cityController.text}, ${_stateController.text}');
-      debugPrint('Customer: ${_nameController.text} (${_companyController.text})');
-      debugPrint('Contact: ${_phoneController.text} | ${_emailController.text}');
-      debugPrint('Complaint Type: ${_customerComplaint ? 'Customer Complaint' : 'General Maintenance'}');
-      debugPrint('Assigned To: $_assignedTo');
-      debugPrint('Address By: $_addressByDate');
-      debugPrint('Comments: ${_commentController.text}');
-      
-      // Navigate back to devices screen after successful submission
-      Navigator.of(context).pop();
+        // Prepare equipment details
+        Map<String, dynamic> equipmentDetails = {
+          'model': _modelController.text,
+          'awgSerialNumber': _awgSerialNumberController.text,
+          'city': _cityController.text,
+          'state': _stateController.text,
+          'owner': _ownerController.text,
+        };
+
+        // Prepare customer details
+        Map<String, dynamic> customerDetails = {
+          'customerId': _customerIdController.text,
+          'name': _nameController.text,
+          'company': _companyController.text,
+          'phone': _phoneController.text,
+          'email': _emailController.text,
+        };
+
+        // Prepare service details
+        Map<String, dynamic> serviceDetails = {
+          'requestType': _customerComplaint ? 'customer_complaint' : 'general_maintenance',
+          'priority': _customerComplaint ? 'high' : 'medium',
+          'description': _commentController.text,
+          'comments': _commentController.text,
+          'assignedTo': _assignedTo,
+          'addressByDate': _addressByDate != null ? Timestamp.fromDate(_addressByDate!) : null,
+        };
+
+        // Create service request
+        String srId = await AdminAction.createServiceRequest(
+          equipmentDetails: equipmentDetails,
+          customerDetails: customerDetails,
+          serviceDetails: serviceDetails,
+          deviceId: widget.deviceToService?['deviceInfo']?['awgSerialNumber'],
+        );
+
+        // If technician is assigned, create task immediately
+        if (_assignedTo != null && _assignedTo!.isNotEmpty) {
+          try {
+            String taskId = await AdminAction.assignTaskToEmployee(
+              serviceRequestId: srId,
+              employeeId: _assignedTo!,
+              assignedBy: 'ADMIN001', // Replace with actual admin ID
+            );
+            
+            debugPrint('✅ Task created and assigned: $taskId');
+          } catch (e) {
+            debugPrint('⚠️ Service request created but task assignment failed: $e');
+          }
+        }
+
+        // Hide loading indicator
+        Navigator.of(context).pop();
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Service request created successfully!\nSR ID: $srId'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+
+        // Print debug information
+        debugPrint('=== Service Request Created ===');
+        debugPrint('SR ID: $srId');
+        debugPrint('Equipment Model: ${_modelController.text}');
+        debugPrint('AWG Serial Number: ${_awgSerialNumberController.text}');
+        debugPrint('Location: ${_cityController.text}, ${_stateController.text}');
+        debugPrint('Customer: ${_nameController.text} (${_companyController.text})');
+        debugPrint('Contact: ${_phoneController.text} | ${_emailController.text}');
+        debugPrint('Request Type: ${_customerComplaint ? 'Customer Complaint' : 'General Maintenance'}');
+        debugPrint('Assigned To: $_assignedTo');
+        debugPrint('Address By: $_addressByDate');
+        debugPrint('Comments: ${_commentController.text}');
+        
+        // Navigate back to previous screen
+        Navigator.of(context).pop();
+        
+      } catch (e) {
+        // Hide loading indicator if showing
+        Navigator.of(context).pop();
+        
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error creating service request: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+        
+        debugPrint('❌ Error creating service request: $e');
+      }
     }
   }
 
@@ -148,7 +353,6 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-          
               EquipmentDetailsForm(
                 modelController: _modelController,
                 cityController: _cityController,
@@ -169,7 +373,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
                 commentController: _commentController,
                 generalMaintenance: _generalMaintenance,
                 customerComplaint: _customerComplaint,
-                assignedTo: _assignedTo,
+                
                 addressByDate: _addressByDate,
                 onGeneralMaintenanceChanged: (value) {
                   setState(() => _generalMaintenance = value);
@@ -177,13 +381,14 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
                 onCustomerComplaintChanged: (value) {
                   setState(() => _customerComplaint = value);
                 },
-                onAssignedToChanged: (value) {
-                  setState(() => _assignedTo = value);
-                },
+              
                 onAddressByDateChanged: (date) {
                   setState(() => _addressByDate = date);
                 },
               ),
+              const SizedBox(height: 24),
+              // Add the technician dropdown here
+              _buildTechnicianDropdown(),
               const SizedBox(height: 24),
               SubmitButton(
                 onPressed: _onSubmit,

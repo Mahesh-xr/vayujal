@@ -9,11 +9,9 @@ class ServiceRequestDetailsWidget extends StatelessWidget {
   final TextEditingController commentController;
   final bool generalMaintenance;
   final bool customerComplaint;
-  final String? assignedTo;
   final DateTime? addressByDate;
   final Function(bool) onGeneralMaintenanceChanged;
   final Function(bool) onCustomerComplaintChanged;
-  final Function(String?) onAssignedToChanged;
   final Function(DateTime) onAddressByDateChanged;
   final String? Function(String?)? commentValidator;
 
@@ -22,11 +20,9 @@ class ServiceRequestDetailsWidget extends StatelessWidget {
     required this.commentController,
     required this.generalMaintenance,
     required this.customerComplaint,
-    required this.assignedTo,
     required this.addressByDate,
     required this.onGeneralMaintenanceChanged,
     required this.onCustomerComplaintChanged,
-    required this.onAssignedToChanged,
     required this.onAddressByDateChanged,
     this.commentValidator,
   });
@@ -92,26 +88,7 @@ class ServiceRequestDetailsWidget extends StatelessWidget {
                 validator: commentValidator,
               ),
               
-              const SizedBox(height: 24),
               
-              // Assign To Section
-              const Text(
-                'Assign To',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              CustomDropdown(
-                value: assignedTo,
-                hint: 'Name ▼',
-                items: const ['Technician 1', 'Technician 2', 'Technician 3'],
-                onChanged: onAssignedToChanged, label: '',
-              ),
-              
-              const SizedBox(height: 20),
               
               // Address By Section
               const SizedBox(height: 8),
