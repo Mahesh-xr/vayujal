@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:vayujal/DatabaseAction/adminAction.dart';
+import 'package:vayujal/screens/all_service_request_page.dart';
 import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
 import 'package:vayujal/widgets/new_service_request_widgets/customer_detials_form.dart';
 import 'package:vayujal/widgets/new_service_request_widgets/equipment_details_form.dart.dart';
@@ -106,17 +107,10 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
     _emailController.text = customerDetails['email'] ?? '';
     
     // Generate customer ID based on serial number or timestamp
-    final serialNumber = deviceInfo['serialNumber'] ?? '';
-    if (serialNumber.isNotEmpty) {
-      _customerIdController.text = 'CUST_${serialNumber}';
-    } else {
-      _customerIdController.text = 'CUST_${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
-    }
+   
 
     // SR Details - pre-fill with device context
-    final deviceModel = deviceInfo['model'] ?? 'device';
-    final deviceSerial = deviceInfo['serialNumber'] ?? 'N/A';
-    _commentController.text = 'Service request for $deviceModel (Serial: $deviceSerial)';
+   
   }
 
   // Widget for technician dropdown
@@ -253,7 +247,6 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
 
         // Prepare customer details
         Map<String, dynamic> customerDetails = {
-          'customerId': _customerIdController.text,
           'name': _nameController.text,
           'company': _companyController.text,
           'phone': _phoneController.text,
@@ -262,9 +255,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
 
         // Prepare service details
         Map<String, dynamic> serviceDetails = {
-          'requestType': _customerComplaint ? 'customer_complaint' : 'general_maintenance',
-          'priority': _customerComplaint ? 'high' : 'medium',
-          'description': _commentController.text,
+          'requestType': _customerComplaint ? 'customer_complaint' : 'general_maintenance',          
           'comments': _commentController.text,
           'assignedTo': _assignedTo,
           'addressByDate': _addressByDate != null ? Timestamp.fromDate(_addressByDate!) : null,
@@ -318,8 +309,12 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
         debugPrint('Address By: $_addressByDate');
         debugPrint('Comments: ${_commentController.text}');
         
-        // Navigate back to previous screen
-        Navigator.of(context).pop();
+        // Navigate  to all SR request screen
+        Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const AllServiceRequestsPage(),
+        ),
+      );
         
       } catch (e) {
         // Hide loading indicator if showing
@@ -366,7 +361,6 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
                 companyController: _companyController,
                 phoneController: _phoneController,
                 emailController: _emailController,
-                customerIdController: _customerIdController,
               ),
               const SizedBox(height: 24),
               ServiceRequestDetailsWidget(

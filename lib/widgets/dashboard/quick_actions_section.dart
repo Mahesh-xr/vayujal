@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vayujal/screens/add_device_screen.dart';
 import 'package:vayujal/screens/all_devices.dart';
+import 'package:vayujal/screens/all_service_request_page.dart';
 import 'action_button.dart';
 
 class QuickActionsSection extends StatelessWidget {
@@ -52,7 +53,11 @@ class QuickActionsSection extends StatelessWidget {
         const SizedBox(height: 12),
          ActionButton(
           onPressed: () {
-            print('hi');
+             Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const AllServiceRequestsPage(),
+        ),
+      );
           },
           title: 'View all Tasks', 
         ),

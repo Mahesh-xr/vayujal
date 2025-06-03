@@ -8,7 +8,6 @@ class CustomerDetailsForm extends StatefulWidget {
   final TextEditingController companyController;
   final TextEditingController phoneController;
   final TextEditingController emailController;
-  final TextEditingController customerIdController;
   final bool demoMode;
 
   const CustomerDetailsForm({
@@ -17,7 +16,6 @@ class CustomerDetailsForm extends StatefulWidget {
     required this.companyController,
     required this.phoneController,
     required this.emailController,
-    required this.customerIdController,
     this.demoMode = false,
   });
 
@@ -61,13 +59,10 @@ class _CustomerDetailsFormState extends State<CustomerDetailsForm> {
   @override
   void initState() {
     super.initState();
-    if (widget.demoMode && widget.customerIdController.text.isEmpty) {
-      _fillCustomerData(_demoCustomers.first);
-    }
+    
   }
 
   void _fillCustomerData(Map<String, String> customer) {
-    widget.customerIdController.text = customer['id'] ?? '';
     widget.nameController.text = customer['name'] ?? '';
     widget.companyController.text = customer['company'] ?? '';
     widget.phoneController.text = customer['phone'] ?? '';
@@ -117,16 +112,6 @@ class _CustomerDetailsFormState extends State<CustomerDetailsForm> {
                     const SizedBox(height: 16),
                   ],
                 ),
-              CustomTextField(
-                label: 'Customer ID',
-                controller: widget.customerIdController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter customer ID';
-                  }
-                  return null;
-                },
-              ),
               const SizedBox(height: 12),
               CustomTextField(
                 label: 'Name',
