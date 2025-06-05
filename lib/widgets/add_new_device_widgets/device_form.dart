@@ -16,7 +16,7 @@ class DeviceForm extends StatefulWidget {
 class _DeviceFormState extends State<DeviceForm> {
   final _formKey = GlobalKey<FormState>();
   final _serialNumberController = TextEditingController();
-   final _awgSerialNumberController = TextEditingController();
+  final _awgSerialNumberController = TextEditingController();
   final _installationDateController = TextEditingController();
   final _customerDetailsKey = GlobalKey<CustomerDetailsSectionState>();
 

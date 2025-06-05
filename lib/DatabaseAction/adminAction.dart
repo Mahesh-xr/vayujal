@@ -15,16 +15,16 @@ class AdminAction {
 
       List<Map<String, dynamic>> technicians = snapshot.docs.map((doc) {
         return {
-          'name': doc['name'] ?? '',
+          'name': doc['fullName'] ?? '',
           'empId': doc['employeeId'] ?? '',
         };
       }).toList();
 
       return technicians;
     } catch (e) {
-      print("Error fetching technicians: $e");
+      print("🔥Error fetching technicians: $e");
       return [];
-    }
+    }  
   }
 
   /// Adds a new device to Firestore

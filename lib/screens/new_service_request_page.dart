@@ -92,7 +92,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
     final deviceInfo = device['deviceInfo'] ?? {};
     final customerDetails = device['customerDetails'] ?? {};
     final locationDetails = device['locationDetails'] ?? {};
-
+    // final maintainanceDetails = device['maintenanceContract'] ??{};
     // Equipment data from device
     _modelController.text = deviceInfo['model'] ?? '';
     _awgSerialNumberController.text = deviceInfo['awgSerialNumber'] ?? '';
@@ -193,10 +193,6 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
                   });
                 },
                 validator: (value) {
-                  // Optional: Make assignment mandatory
-                  // if (value == null || value.isEmpty) {
-                  //   return 'Please select a technician';
-                  // }
                   return null;
                 },
                 hint: const Text('Choose a technician'),
@@ -243,6 +239,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
           'city': _cityController.text,
           'state': _stateController.text,
           'owner': _ownerController.text,
+          'amcDetails': widget.deviceToService!['maintenanceContract']
         };
 
         // Prepare customer details
@@ -251,6 +248,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
           'company': _companyController.text,
           'phone': _phoneController.text,
           'email': _emailController.text,
+          'address': widget.deviceToService!['locationDetails']
         };
 
         // Prepare service details

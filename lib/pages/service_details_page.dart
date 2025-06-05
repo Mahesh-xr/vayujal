@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:vayujal/DatabaseAction/adminAction.dart';
+import 'package:vayujal/screens/service_hostory_screen.dart';
 import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
+import 'package:vayujal/widgets/new_service_request_widgets/submit_botton.dart';
 
 class ServiceDetailsPage extends StatefulWidget {
   final String serviceRequestId;
@@ -66,6 +68,7 @@ class _ServiceDetailsPageState extends State<ServiceDetailsPage> {
 
   Widget _buildDetailCard(String title, Widget content) {
     return Card(
+      
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -149,6 +152,7 @@ class _ServiceDetailsPageState extends State<ServiceDetailsPage> {
           _buildDetailRow('Company', customerDetails['company'] ?? ''),
           _buildDetailRow('Mobile', customerDetails['phone'] ?? ''),
           _buildDetailRow('Email', customerDetails['email'] ?? ''),
+          _buildDetailRow('Address', customerDetails['address']['fullAddress'] ?? ''),
         ],
       ),
     );
@@ -156,7 +160,7 @@ class _ServiceDetailsPageState extends State<ServiceDetailsPage> {
 
   Widget _buildServiceHistory() {
     // Check if service history exists
-    Map<String, dynamic> serviceDetails = _serviceRequest?['serviceDetails'] ?? {};
+    Map<String, dynamic> serviceDetails = _serviceRequest?['equipmentDetails']['amcDetails']?? {};
     
     // For now, we'll show basic service information
     // You can extend this to fetch actual service history from a separate collection
@@ -164,12 +168,22 @@ class _ServiceDetailsPageState extends State<ServiceDetailsPage> {
       'Service History',
       Column(
         children: [
-          _buildDetailRow('Request Type', (serviceDetails['requestType'] ?? '').toString().replaceAll('_', ' ').toUpperCase()),
-          _buildDetailRow('Status', (serviceDetails['status'] ?? 'pending').toString().replaceAll('_', ' ').toUpperCase()),
-          _buildDetailRow('Created Date', _formatDate(_serviceRequest?['createdAt'])),
-          _buildDetailRow('Assigned Date', _formatDate(serviceDetails['assignedDate'])),
-          _buildDetailRow('Address By Date', _formatDate(serviceDetails['addressByDate'])),
-          _buildDetailRow('Assigned To', serviceDetails['assignedTo'] ?? 'Unassigned'),
+          _buildDetailRow('AMC Start', (serviceDetails['amcStartDate'] ?? '')),
+          _buildDetailRow('AMC End', (serviceDetails['amcEndDate'] ?? '')),
+          _buildDetailRow('AMC Type', (serviceDetails['amcType'] ?? '')),
+          _buildDetailRow("Annual Contact", (serviceDetails['annualContract'] ? 'yes':'no')),
+          SubmitButton(
+            text: "View Full History",
+            onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ServiceHistoryScreen(serialNumber: _serviceRequest?['equipmentDetails']['awgSerialNumber'] ,),
+      ),
+    );
+  })
+           
+         
         
           
         ],

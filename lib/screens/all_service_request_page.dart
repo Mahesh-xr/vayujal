@@ -74,7 +74,7 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
   String _getStatusFromFilter(String filter) {
     switch (filter) {
       case 'In Progress':
-        return 'in_progress';
+        return 'pending';
       case 'Delayed':
         return 'delayed';
       case 'Completed':
@@ -112,6 +112,7 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
       case 'delayed':
         return 'Delayed';
       case 'pending':
+        
       default:
         return 'Pending';
     }
