@@ -178,7 +178,7 @@ class _ServiceDetailsPageState extends State<ServiceDetailsPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ServiceHistoryScreen(serialNumber: _serviceRequest?['equipmentDetails']['awgSerialNumber'] ,),
+        builder: (context) => ServiceHistoryScreen(serialNumber: _serviceRequest?['deviceId'] ,),
       ),
     );
   })

@@ -28,7 +28,7 @@ class ServiceHistoryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'SR Number: ${service.srNumber}',
+                      'AWG Serial Number: ${service.srNumber}',
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 4),

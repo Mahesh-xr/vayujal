@@ -20,7 +20,7 @@ class AMCHistoryCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'SR Number: ${awg.srNumber}',
+                  'SR Number:  ${awg.srNumber}',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 Container(
@@ -44,7 +44,7 @@ class AMCHistoryCard extends StatelessWidget {
             Text(awg.dateRange),
             const SizedBox(height: 4),
             Text('Type: ${awg.type}'),
-            Text('Coverage: ${awg.coverage}'),
+           
           ],
         ),
       ),

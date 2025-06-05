@@ -274,7 +274,7 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => ServiceDetailsPage(
-                                        serviceRequestId: serviceRequest['id'],
+                                        serviceRequestId: srId,
                                       ),
                                     ),
                                   );

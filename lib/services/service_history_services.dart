@@ -10,7 +10,7 @@ class ServiceHistoryService {
       QuerySnapshot querySnapshot = await _firestore
           .collection('service_history')
           .where('srNumber', isEqualTo: serialNumber)
-          .orderBy('serviceDate', descending: true)
+          // .orderBy('serviceDate', descending: true)
           .get();
 
       return querySnapshot.docs
@@ -27,15 +27,15 @@ class ServiceHistoryService {
     try {
       QuerySnapshot querySnapshot = await _firestore
           .collection('devices')
-          .where('awgSerialNumber', isEqualTo: serialNumber)
-          .orderBy('startDate', descending: true)
+          .where('deviceId', isEqualTo: serialNumber)
           .get();
+    
 
       return querySnapshot.docs
           .map((doc) => AWGDetails.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('Error fetching AWG details: $e');
+      print('Error fetching AWG details  bro: $e');
       return [];
     }
   }

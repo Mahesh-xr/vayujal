@@ -38,9 +38,13 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> with Single
       final serviceData = await _service.getServiceHistory(widget.serialNumber);
       final awgData = await _service.getAWGDetails(widget.serialNumber);
       
+      
       setState(() {
         serviceHistory = serviceData;
         awgHistory = awgData;
+        print("DATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        print(serviceHistory);
+        print(awgHistory);
         isLoading = false;
       });
     } catch (e) {

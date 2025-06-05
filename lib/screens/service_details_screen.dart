@@ -1,33 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:vayujal/DatabaseAction/service_history_modals/service_history_modal.dart';
+import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
 
 class ServiceDetailScreen extends StatelessWidget {
   final ServiceHistoryItem service;
 
-  const ServiceDetailScreen({Key? key, required this.service}) : super(key: key);
+  const ServiceDetailScreen({super.key, required this.service});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Service History',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Image.asset('assets/vayujal_logo.png', height: 40),
-          ),
-        ],
-      ),
+      appBar:CustomAppBar(title: "Service history"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -44,11 +28,8 @@ class ServiceDetailScreen extends StatelessWidget {
                   ),
                   child: const Text('Service History'),
                 ),
-                const SizedBox(width: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  child: const Text('AMC History', style: TextStyle(color: Colors.grey)),
-                ),
+                
+                
               ],
             ),
             const SizedBox(height: 20),
@@ -62,7 +43,7 @@ class ServiceDetailScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'SR Number: ${service.srNumber}',
+                      'AWG Serial Number: ${service.srNumber}',
                       style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                     ),
                     const SizedBox(height: 4),
