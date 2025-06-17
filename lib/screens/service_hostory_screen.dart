@@ -21,8 +21,8 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> with Single
   final ServiceHistoryService _service = ServiceHistoryService();
   
   List<ServiceHistoryItem> serviceHistory = [];
-  List<AWGDetails> awgHistory = [];
   bool isLoading = true;
+  Map<String, dynamic>? awgDetails; // Made nullable
 
   @override
   void initState() {
@@ -36,21 +36,20 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> with Single
     
     try {
       final serviceData = await _service.getServiceHistory(widget.serialNumber);
-      final awgData = await _service.getAWGDetails(widget.serialNumber);
-      
+      final awgData = await AWGDetails.getAMCDetails(widget.serialNumber);
       
       setState(() {
         serviceHistory = serviceData;
-        awgHistory = awgData;
-        print("DATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        awgDetails = awgData; // Removed the force cast (!)
+        print("Data");
         print(serviceHistory);
-        print(awgHistory);
+        print(awgDetails);
         isLoading = false;
       });
     } catch (e) {
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading data: $e')),
+        SnackBar(content: Text('Error loading data: $e')), // Fixed typo
       );
     }
   }
@@ -90,32 +89,118 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> with Single
           ),
         ],
       ),
-     
     );
   }
 
   Widget _buildServiceHistoryTab() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: serviceHistory.length,
-      itemBuilder: (context, index) {
-        final service = serviceHistory[index];
-        return ServiceHistoryCard(
-          service: service,
-          onTap: () => _showServiceDetails(service),
-        );
-      },
+    // Check if service history is empty
+    if (serviceHistory.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.build_outlined,
+        title: 'No Service History',
+        message: 'This device has no recorded service history yet.\nService records will appear here once maintenance is performed.',
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: serviceHistory.length,
+        itemBuilder: (context, index) {
+          final service = serviceHistory[index];
+          return ServiceHistoryCard(
+            service: service,
+            onTap: () => _showServiceDetails(service),
+          );
+        },
+      ),
     );
   }
 
   Widget _buildAMCHistoryTab() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: awgHistory.length,
-      itemBuilder: (context, index) {
-        final awg = awgHistory[index];
-        return AMCHistoryCard(awg: awg);
-      },
+    // Check if AMC details exist and are not empty
+    if (awgDetails == null || awgDetails!.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.assignment_outlined,
+        title: 'No AMC Records',
+        message: 'No Annual Maintenance Contract records found for this device.\nAMC details will be displayed here once a contract is active.',
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: AMCHistoryCard(amcData: awgDetails!), // Safe to use ! here after null check
+      ),
+    );
+  }
+
+  Widget _buildEmptyState({
+    required IconData icon,
+    required String title,
+    required String message,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 50,
+                color: Colors.grey[400],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Refresh'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -127,8 +212,6 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> with Single
       ),
     );
   }
-
- 
 
   @override
   void dispose() {

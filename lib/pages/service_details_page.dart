@@ -68,7 +68,7 @@ class _ServiceDetailsPageState extends State<ServiceDetailsPage> {
 
   Widget _buildDetailCard(String title, Widget content) {
     return Card(
-      
+      color: Colors.white,
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(

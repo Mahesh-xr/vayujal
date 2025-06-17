@@ -43,7 +43,6 @@ class SearchBarWidget extends StatelessWidget {
                   color: const Color.fromARGB(255, 36, 35, 35),
                   fontSize: 16,
                 ),
-                border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
               ),
               style: const TextStyle(

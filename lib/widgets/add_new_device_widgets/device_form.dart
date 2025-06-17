@@ -118,6 +118,7 @@ class _DeviceFormState extends State<DeviceForm> {
       }
 
       final formData = {
+        'deviceId':_awgSerialNumberController.text,
         'deviceInfo': {
           'model': _selectedModel,
           'awgSerialNumber':_awgSerialNumberController.text,
@@ -163,7 +164,7 @@ class _DeviceFormState extends State<DeviceForm> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Device registered successfully!'),
-              backgroundColor: Color.fromARGB(255, 221, 224, 222),
+              backgroundColor: Colors.green,
             ),
           );
         }

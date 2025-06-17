@@ -73,8 +73,8 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
 
   String _getStatusFromFilter(String filter) {
     switch (filter) {
-      case 'In Progress':
-        return 'pending';
+      case 'in_progress':
+        return 'In Progress';
       case 'Delayed':
         return 'delayed';
       case 'Completed':
@@ -263,6 +263,7 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
                             String status = _getDisplayStatus(serviceRequest);
                             
                             return Card(
+                              color: Colors.grey.shade100,
                               margin: const EdgeInsets.only(bottom: 12),
                               elevation: 2,
                               shape: RoundedRectangleBorder(
