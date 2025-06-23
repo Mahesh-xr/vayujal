@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:vayujal/screens/auth_wrapper.dart';
 import 'package:vayujal/screens/dashboard_screen.dart';
+import 'package:vayujal/screens/profile_setup_screen.dart';
 import 'package:vayujal/screens/signup_screen.dart';
 import 'package:vayujal/screens/verification_screen.dart';
 
@@ -33,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
+          MaterialPageRoute(builder: (context) => AuthWrapper()),
         );
       } on FirebaseAuthException catch (e) {
         String errorMessage = 'Login failed';

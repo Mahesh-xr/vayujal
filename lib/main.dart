@@ -1,43 +1,4 @@
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:flutter/material.dart';
-// import 'package:vayujal/firebase_options.dart';
-// import 'package:vayujal/screens/all_devices.dart';
-// import 'package:vayujal/screens/all_service_request_page.dart';
-// import 'package:vayujal/screens/dashboard_screen.dart';
-// import 'package:vayujal/screens/splash_screen.dart';
 
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized(); // ✅ Required to initialize Flutter engine
-//   await Firebase.initializeApp(
-//     options: DefaultFirebaseOptions.currentPlatform,
-//   );
-
-//   runApp(const MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({Key? key}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Device Management',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//         visualDensity: VisualDensity.adaptivePlatformDensity,
-//       ),
-//       home: const  DashboardScreen(),
-//       routes: {
-//     '/home': (context) => const DashboardScreen(),
-//     '/alldevice': (context) => const DevicesScreen(),
-//     // '/profile': (context) => const ProfileListScreen(),
-//     '/history': (context) => const AllServiceRequestsPage(),
-//     // '/notifications': (context) => const NotificationScreen(),
-//   },
-//       debugShowCheckedModeBanner: false,
-//     );
-//   }
-// }
 
 
 
@@ -47,6 +8,7 @@ import 'package:vayujal/firebase_options.dart';
 import 'package:vayujal/screens/all_devices.dart';
 import 'package:vayujal/screens/all_service_request_page.dart';
 import 'package:vayujal/screens/dashboard_screen.dart';
+import 'package:vayujal/screens/login_screen.dart';
 import 'package:vayujal/screens/service_personel_screen.dart';
 import 'screens/auth_wrapper.dart';
 import 'utils/constants.dart';
@@ -105,11 +67,13 @@ class MyApp extends StatelessWidget {
       ),
       home: const AuthWrapper(),
        routes: {
-    '/home': (context) => const DashboardScreen(),
+    '/home': (context) => const LoginScreen(),
     '/alldevice': (context) => const DevicesScreen(),
     '/profile': (context) =>  ServicePersonnelPage(),
     '/history': (context) => const AllServiceRequestsPage(),
     // '/notifications': (context) => const NotificationScreen(),
+    '/login':(context) => const LoginScreen(),
+    '/dashboard':(context) => const DashboardScreen()
   }
     );
   }

@@ -16,16 +16,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      // leading: IconButton(
-      //   icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-      //   onPressed: () => Navigator.pop(context),
-      // ),
+     
       title: Row(
         children: [
           // Admin Profile Avatar
         IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-       onPressed: () => Navigator.pop(context),
+       onPressed: () => Navigator.pushReplacementNamed(context, '/dashboard'),
       ),
           GestureDetector(
             onTap: () {

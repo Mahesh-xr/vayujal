@@ -17,6 +17,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
   
   bool _isLoading = false;
   bool _isLoadingProfile = true;
+  bool _isEditingMode = false; // Toggle between edit and view mode
   String _profileImageUrl = '';
   
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -49,14 +50,18 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
           setState(() {
             _nameController.text = data['name'] ?? '';
             _emailController.text = data['email'] ?? user.email ?? '';
-            _phoneController.text = data['phone'] ?? '';
-            _organizationController.text = data['organization'] ?? '';
+            _phoneController.text = data['mobileNumber'] ?? '';
+            _organizationController.text = data['employeeId'] ?? '';
             _designationController.text = data['designation'] ?? '';
             _profileImageUrl = data['profileImageUrl'] ?? '';
           });
         } else {
           // Set default email from Firebase Auth
           _emailController.text = user.email ?? '';
+          // If no profile exists, start in editing mode
+          setState(() {
+            _isEditingMode = true;
+          });
         }
       }
     } catch (e) {
@@ -66,6 +71,13 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
         _isLoadingProfile = false;
       });
     }
+  }
+
+  // Toggle edit mode
+  void _toggleEditMode() {
+    setState(() {
+      _isEditingMode = !_isEditingMode;
+    });
   }
 
   // Save admin profile
@@ -82,8 +94,8 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
         await _firestore.collection('admins').doc(user.uid).set({
           'name': _nameController.text.trim(),
           'email': _emailController.text.trim(),
-          'phone': _phoneController.text.trim(),
-          'organization': _organizationController.text.trim(),
+          'mobileNumber': _phoneController.text.trim(),
+          'employeeId': _organizationController.text.trim(),
           'designation': _designationController.text.trim(),
           'profileImageUrl': _profileImageUrl,
           'uid': user.uid,
@@ -93,11 +105,10 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
 
         _showSnackBar('Profile updated successfully!', Colors.green);
         
-        // Navigate back after a short delay
-        await Future.delayed(Duration(seconds: 1));
-        if (mounted) {
-          Navigator.pop(context);
-        }
+        // Switch back to view mode after saving
+        setState(() {
+          _isEditingMode = false;
+        });
       }
     } catch (e) {
       _showSnackBar('Error saving profile: $e', Colors.red);
@@ -168,6 +179,8 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
 
   // Show image picker options
   void _showImagePickerOptions() {
+    if (!_isEditingMode) return; // Only allow image picking in edit mode
+    
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -201,10 +214,10 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                         Container(
                           padding: EdgeInsets.all(15),
                           decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
+                            color: Colors.black,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(Icons.camera_alt, size: 30, color: Colors.blue),
+                          child: Icon(Icons.camera_alt, size: 30, color: Colors.black),
                         ),
                         SizedBox(height: 8),
                         Text('Camera'),
@@ -332,29 +345,30 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                                   : null,
                             ),
                           ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
-                              ),
-                              child: IconButton(
-                                icon: Icon(Icons.camera_alt, color: Colors.white, size: 20),
-                                onPressed: _showImagePickerOptions,
+                          if (_isEditingMode)
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white, width: 2),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                                  onPressed: _showImagePickerOptions,
+                                ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ),
                     
                     SizedBox(height: 30),
                     
-                    // Form Fields
-                    _buildTextField(
+                    // Form Fields - Toggle between TextField and Text display
+                    _buildProfileField(
                       controller: _nameController,
                       label: 'Full Name',
                       icon: Icons.person,
@@ -368,7 +382,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                     
                     SizedBox(height: 16),
                     
-                    _buildTextField(
+                    _buildProfileField(
                       controller: _emailController,
                       label: 'Email',
                       icon: Icons.email,
@@ -386,7 +400,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                     
                     SizedBox(height: 16),
                     
-                    _buildTextField(
+                    _buildProfileField(
                       controller: _phoneController,
                       label: 'Phone Number',
                       icon: Icons.phone,
@@ -404,9 +418,9 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                     
                     SizedBox(height: 16),
                     
-                    _buildTextField(
+                    _buildProfileField(
                       controller: _organizationController,
-                      label: 'Organization',
+                      label: 'Employee ID',
                       icon: Icons.business,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -418,7 +432,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                     
                     SizedBox(height: 16),
                     
-                    _buildTextField(
+                    _buildProfileField(
                       controller: _designationController,
                       label: 'Designation',
                       icon: Icons.work,
@@ -432,14 +446,14 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                     
                     SizedBox(height: 30),
                     
-                    // Save Button
+                    // Edit/Save Button
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : _saveProfile,
+                        onPressed: _isLoading ? null : (_isEditingMode ? _saveProfile : _toggleEditMode),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: _isEditingMode ? Colors.green : Colors.blue,
                           disabledBackgroundColor: Colors.grey,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -465,16 +479,65 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                                   ),
                                 ],
                               )
-                            : Text(
-                                'Save Profile',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    _isEditingMode ? Icons.save : Icons.edit,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    _isEditingMode ? 'Save Changes' : 'Edit Profile',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                       ),
                     ),
+                    
+                    SizedBox(height: 20),
+                    
+                    // Cancel button (only shown in edit mode)
+                    if (_isEditingMode)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              _isEditingMode = false;
+                            });
+                            // Reload profile data to revert changes
+                            _loadAdminProfile();
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.grey, width: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.cancel, color: Colors.grey),
+                              SizedBox(width: 8),
+                              Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     
                     SizedBox(height: 20),
                     
@@ -514,39 +577,83 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
     );
   }
 
-  Widget _buildTextField({
+  Widget _buildProfileField({
     required TextEditingController controller,
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.blue),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+    if (_isEditingMode) {
+      // Show TextField in edit mode
+      return TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon, color: Colors.grey.shade500),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.blue, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          filled: true,
+          fillColor: Colors.white,
         ),
-        enabledBorder: OutlineInputBorder(
+        validator: validator,
+      );
+    } else {
+      // Show text display in view mode
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          border: Border.all(color: Colors.grey[300]!),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.blue, width: 2),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.grey.shade600),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    controller.text.isEmpty ? 'Not set' : controller.text,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: controller.text.isEmpty ? Colors.grey[400] : Colors.black87,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.red),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-      ),
-      validator: validator,
-    );
+      );
+    }
   }
 }
