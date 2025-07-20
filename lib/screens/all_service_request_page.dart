@@ -103,7 +103,7 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
   }
 
   String _getDisplayStatus(Map<String, dynamic> serviceRequest) {
-    String status = serviceRequest['serviceDetails']?['status'] ?? serviceRequest['status'] ?? 'pending';
+    String status = serviceRequest['status'] ?? 'pending';
     switch (status.toLowerCase()) {
       case 'in_progress':
         return 'In Progress';
@@ -112,7 +112,7 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
       case 'delayed':
         return 'Delayed';
       case 'pending':
-        
+        return 'Pending';
       default:
         return 'Pending';
     }
@@ -159,7 +159,7 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: CustomAppBar(
-        title: 'Scheduled Services',
+        title: 'Services',
       ),
       body: Column(
         children: [

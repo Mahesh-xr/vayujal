@@ -58,8 +58,14 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> with Single
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: CustomAppBar(title: "Service History"),
-      body: Column(
+        appBar: AppBar(
+        title: Text('History'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        centerTitle: true,
+        
+      ),      body: Column(
         children: [
           // Tab Bar
           Container(

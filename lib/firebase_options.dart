@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -28,7 +25,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -46,29 +46,29 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCCn87RCGPVaTNUaSfAeGYdj0bdvg0ihXY',
+    appId: '1:148518126293:web:c6e59c19073b679646d85c',
+    messagingSenderId: '148518126293',
+    projectId: 'vayujal-db-for-device-customer',
+    authDomain: 'vayujal-db-for-device-customer.firebaseapp.com',
+    storageBucket: 'vayujal-db-for-device-customer.firebasestorage.app',
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC0B4O0BocPLUBSn10-gis8VAozWysDYVI',
-    appId: '1:205934383175:android:c6cea6193940bc5a752162',
-    messagingSenderId: '205934383175',
-    projectId: 'vayujal-db-for-customer-device',
-    storageBucket: 'vayujal-db-for-customer-device.firebasestorage.app',
+    apiKey: 'AIzaSyCObIJQlKDfl-z5zAOdwnfYf0X_kWbunjg',
+    appId: '1:148518126293:android:f09dc294a2edc1a446d85c',
+    messagingSenderId: '148518126293',
+    projectId: 'vayujal-db-for-device-customer',
+    storageBucket: 'vayujal-db-for-device-customer.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAiEWFFM2NaXIPHORpLaBebYlHRb73f4b8',
-    appId: '1:205934383175:ios:02bcc6913e6c53ab752162',
-    messagingSenderId: '205934383175',
-    projectId: 'vayujal-db-for-customer-device',
-    storageBucket: 'vayujal-db-for-customer-device.firebasestorage.app',
-    iosBundleId: 'com.example.vayujal',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAiEWFFM2NaXIPHORpLaBebYlHRb73f4b8',
-    appId: '1:205934383175:ios:02bcc6913e6c53ab752162',
-    messagingSenderId: '205934383175',
-    projectId: 'vayujal-db-for-customer-device',
-    storageBucket: 'vayujal-db-for-customer-device.firebasestorage.app',
+    apiKey: 'AIzaSyAT5me80HiTgszAgiDcRdm4HL1scxI8TKM',
+    appId: '1:148518126293:ios:833a425d3d8cb44646d85c',
+    messagingSenderId: '148518126293',
+    projectId: 'vayujal-db-for-device-customer',
+    storageBucket: 'vayujal-db-for-device-customer.firebasestorage.app',
     iosBundleId: 'com.example.vayujal',
   );
 }

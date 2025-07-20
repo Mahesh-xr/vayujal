@@ -3,6 +3,7 @@ import 'package:vayujal/DatabaseAction/adminAction.dart';
 import 'package:vayujal/screens/all_devices.dart';
 import 'device_information_section.dart';
 import 'customer_details_section.dart';
+import 'photo_upload_widget.dart';
 
 class DeviceForm extends StatefulWidget {
   const DeviceForm({super.key, this.deviceToEdit});
@@ -23,6 +24,7 @@ class _DeviceFormState extends State<DeviceForm> {
   String? _selectedModel;
   String? _selectedDispenser;
   String? _selectedPowerSource;
+  List<String> _uploadedPhotos = []; // Add this for photo storage
 
   @override
   void initState() {
@@ -41,7 +43,11 @@ class _DeviceFormState extends State<DeviceForm> {
       _installationDateController.text = deviceInfo['installationDate'];
       _selectedDispenser = deviceInfo['dispenserDetails'];
       _selectedPowerSource = deviceInfo['powerSource'];
-     
+      
+      // Load existing photos if any
+      if (deviceInfo['photos'] != null) {
+        _uploadedPhotos = List<String>.from(deviceInfo['photos']);
+      }
 
       // Populate customer details after the widget is built
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -79,10 +85,9 @@ class _DeviceFormState extends State<DeviceForm> {
   void dispose() {
     _serialNumberController.dispose();
     _installationDateController.dispose();
+    _awgSerialNumberController.dispose();
     super.dispose();
   }
-
- 
 
   void _handleModelSelection(String? model) {
     setState(() {
@@ -102,6 +107,12 @@ class _DeviceFormState extends State<DeviceForm> {
     });
   }
 
+  void _handlePhotosUploaded(List<String> photos) {
+    setState(() {
+      _uploadedPhotos = photos;
+    });
+  }
+
   void _printAllFormData() async {
     if (_formKey.currentState!.validate()) {
       final customerState = _customerDetailsKey.currentState!;
@@ -118,15 +129,15 @@ class _DeviceFormState extends State<DeviceForm> {
       }
 
       final formData = {
-        'deviceId':_awgSerialNumberController.text,
+        'deviceId': _awgSerialNumberController.text,
         'deviceInfo': {
           'model': _selectedModel,
-          'awgSerialNumber':_awgSerialNumberController.text,
+          'awgSerialNumber': _awgSerialNumberController.text,
           'serialNumber': _serialNumberController.text,
           'dispenserDetails': _selectedDispenser ?? '',
           'powerSource': _selectedPowerSource ?? '',
           'installationDate': _installationDateController.text,
-          
+          'photos': _uploadedPhotos, // Include photos in the data
         },
         'customerDetails': {
           'name': customerState.nameController.text,
@@ -193,7 +204,6 @@ class _DeviceFormState extends State<DeviceForm> {
         children: [
           DeviceInformationSection(
             selectedModel: _selectedModel,
-
             awgSerialNumberController: _awgSerialNumberController,
             serialNumberController: _serialNumberController,
             selectedDispenser: _selectedDispenser,
@@ -204,6 +214,18 @@ class _DeviceFormState extends State<DeviceForm> {
             onPowerSourceChanged: _handlePowerSourceSelection, 
           ),
           const SizedBox(height: 24),
+          
+          // Add Photo Upload Widget
+         PhotoUploadWidget(
+  uploadedPhotos: _uploadedPhotos,
+  onPhotosUploaded: _handlePhotosUploaded,
+  maxPhotos: 5,
+  deviceId: _awgSerialNumberController.text.isNotEmpty 
+      ? _awgSerialNumberController.text 
+      : 'temp_${DateTime.now().millisecondsSinceEpoch}', // Fallback for new devices
+),
+          const SizedBox(height: 24),
+          
           CustomerDetailsSection(key: _customerDetailsKey),
           Container(
             width: double.infinity,

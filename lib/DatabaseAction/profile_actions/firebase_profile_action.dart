@@ -224,49 +224,9 @@ class FirebaseProfileActions {
     required String mobileNumber,
     required String email,
     required String designation,
-    XFile? profileImage,
+    required String profileImage,
   }) async {
     try {
-      String? imageUrl;
-
-      // if (profileImage != null) {
-      //   print('Testing storage connectivity...');
-      //   final bool isStorageAccessible = await testStorageConnectivity();
-        
-      //   if (!isStorageAccessible) {
-      //     return {
-      //       'success': false,
-      //       'message': 'Cannot access Firebase Storage. Please check your configuration.',
-      //     };
-      //   }
-
-      //   print('Starting image upload...');
-        
-      //   // Try the simple method first (most likely to work)
-      //   imageUrl = await uploadProfileImageSimple(profileImage);
-        
-      //   // If simple method fails, try primary upload method
-      //   if (imageUrl == null) {
-      //     print('Simple upload failed, trying primary method...');
-      //     imageUrl = await uploadProfileImage(profileImage);
-      //   }
-        
-      //   // If both fail, try alternative
-      //   if (imageUrl == null) {
-      //     print('Primary upload failed, trying alternative method...');
-      //     imageUrl = await uploadProfileImageAlternative(profileImage);
-      //   }
-        
-      //   if (imageUrl == null) {
-      //     return {
-      //       'success': false,
-      //       'message': 'Failed to upload profile image. Please check your internet connection and Firebase configuration.',
-      //     };
-      //   }
-        
-      //   print('Image uploaded successfully: $imageUrl');
-      // }
-
       // Save profile data
       print('Saving profile data...');
       final bool success = await saveTechnicianProfile(
@@ -275,20 +235,20 @@ class FirebaseProfileActions {
         mobileNumber: mobileNumber,
         email: email,
         designation: designation,
-        profileImageUrl: "sample",
+        profileImageUrl: profileImage,
       );
       
-      if (true) {
+      if (success) {
         return {
           'success': true,
           'message': 'Profile setup completed successfully',
           'imageUrl': "sample",
         };
-      // } else {
-      //   return {
-      //     'success': false,
-      //     'message': 'Profile image uploaded but failed to save profile data',
-      //   };
+      } else {
+        return {
+          'success': false,
+          'message': 'Profile image uploaded but failed to save profile data',
+        };
       }
     } catch (e) {
       print('Error in completeProfileSetup: $e');
@@ -306,7 +266,7 @@ class FirebaseProfileActions {
     required String mobileNumber,
     required String email,
     required String designation,
-    String? profileImageUrl,
+    required String? profileImageUrl,
   }) async {
     try {
       final User? user = _auth.currentUser;
@@ -337,67 +297,4 @@ class FirebaseProfileActions {
     }
   }
 
-  /// Check if user profile is complete
-  static Future<bool> isProfileComplete() async {
-    try {
-      final User? user = _auth.currentUser;
-      if (user == null) return false;
-
-      final DocumentSnapshot doc = await _firestore
-          .collection(AppConstants.adminCollection)
-          .doc(user.uid)
-          .get();
-
-      if (doc.exists) {
-        final data = doc.data() as Map<String, dynamic>?;
-        return data?['isProfileComplete'] ?? false;
-      }
-      return false;
-    } catch (e) {
-      print('Error checking profile completion: $e');
-      return false;
-    }
-  }
-
-  /// Get technician profile data
-  static Future<Map<String, dynamic>?> getTechnicianProfile() async {
-    try {
-      final User? user = _auth.currentUser;
-      if (user == null) return null;
-
-      final DocumentSnapshot doc = await _firestore
-          .collection(AppConstants.adminCollection)
-          .doc(user.uid)
-          .get();
-
-      if (doc.exists) {
-        return doc.data() as Map<String, dynamic>?;
-      }
-      return null;
-    } catch (e) {
-      print('Error getting technician profile: $e');
-      return null;
-    }
-  }
-
-  /// Update profile completion status
-  static Future<bool> updateProfileCompletionStatus(bool isComplete) async {
-    try {
-      final User? user = _auth.currentUser;
-      if (user == null) return false;
-
-      await _firestore
-          .collection(AppConstants.adminCollection)
-          .doc(user.uid)
-          .update({
-        'isProfileComplete': isComplete,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-
-      return true;
-    } catch (e) {
-      print('Error updating profile completion status: $e');
-      return false;
-    }
-  }
 }

@@ -138,7 +138,7 @@ class _ServicePersonnelPageState extends State<ServicePersonnelPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: CustomAppBar(title: "Service Personnel"),
+      appBar: CustomAppBar(title: "Personnel"),
       body: Column(
         children: [
           // Header Section

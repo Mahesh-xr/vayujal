@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:vayujal/screens/auth_wrapper.dart';
 import 'package:vayujal/screens/dashboard_screen.dart';
 import 'package:vayujal/screens/profile_setup_screen.dart';
 import 'package:vayujal/screens/signup_screen.dart';
 import 'package:vayujal/screens/verification_screen.dart';
+import 'package:vayujal/widgets/navigations/NormalAppBar.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -22,37 +23,137 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
       try {
-        await _auth.signInWithEmailAndPassword(
+        print('=== LOGIN ATTEMPT ===');
+        print('Email: ${_emailController.text.trim()}');
+        
+        final UserCredential result = await _auth.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => AuthWrapper()),
-        );
-      } on FirebaseAuthException catch (e) {
-        String errorMessage = 'Login failed';
-        if (e.code == 'user-not-found') {
-          errorMessage = 'No user found for that email.';
-        } else if (e.code == 'wrong-password') {
-          errorMessage = 'Incorrect password.';
+        print('Login successful for user: ${result.user?.uid}');
+        print('User email verified: ${result.user?.emailVerified}');
+
+        // Check if user profile is complete
+        if (result.user != null) {
+          await _checkProfileAndNavigate(result.user!.uid);
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
-        );
+        
+      } on FirebaseAuthException catch (e) {
+        print('Firebase Auth Error: ${e.code} - ${e.message}');
+        
+        String errorMessage = 'Login failed';
+        switch (e.code) {
+          case 'user-not-found':
+            errorMessage = 'No user found for that email.';
+            break;
+          case 'wrong-password':
+            errorMessage = 'Incorrect password.';
+            break;
+          case 'invalid-email':
+            errorMessage = 'Invalid email format.';
+            break;
+          case 'user-disabled':
+            errorMessage = 'This account has been disabled.';
+            break;
+          case 'too-many-requests':
+            errorMessage = 'Too many attempts. Please try again later.';
+            break;
+          case 'network-request-failed':
+            errorMessage = 'Network error. Please check your connection.';
+            break;
+          case 'invalid-credential':
+            errorMessage = 'Invalid email or password.';
+            break;
+          default:
+            errorMessage = e.message ?? 'Login failed. Please try again.';
+        }
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Something went wrong.')),
-        );
+        print('General login error: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Something went wrong. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       } finally {
-        setState(() => _isLoading = false);
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
+  }
+
+  Future<void> _checkProfileAndNavigate(String uid) async {
+    try {
+      print('=== CHECKING PROFILE COMPLETION ===');
+      print('Checking profile for UID: $uid');
+      
+      // Get the technician document from Firestore
+      final DocumentSnapshot adminDoc = await _firestore
+          .collection('admins')
+          .doc(uid)
+          .get();
+
+      if (adminDoc.exists) {
+        final data = adminDoc.data() as Map<String, dynamic>?;
+        final bool isProfileComplete = data?['isProfileComplete'] ?? false;
+        
+        print('Profile complete status: $isProfileComplete');
+        
+        if (mounted) {
+          if (isProfileComplete) {
+            // Profile is complete, navigate to dashboard
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const DashboardScreen()),
+            );
+          } else {
+            // Profile is not complete, navigate to profile setup
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+            );
+          }
+        }
+      } else {
+        print('Technician document not found, navigating to profile setup');
+        // Document doesn't exist, navigate to profile setup
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+          );
+        }
+      }
+    } catch (e) {
+      print('Error checking profile: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error checking profile. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -84,21 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Login',
-          style: TextStyle(
-              color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Image.asset("assets/images/ayujal_logo.png", width: 100, height: 100),
-          ),
-        ],
-      ),
+      appBar: Normalappbar(title:'Login'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -131,9 +218,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 ),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter your email'
-                    : null,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+                  if (!emailRegex.hasMatch(value.trim())) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
 
@@ -164,9 +258,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                 ),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter your password'
-                    : null,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 24),
 
@@ -182,7 +282,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        )
                       : const Text(
                           'Login',
                           style: TextStyle(

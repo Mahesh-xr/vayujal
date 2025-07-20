@@ -90,7 +90,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-          'Sign Up',
+          'Sign up',
           style: TextStyle(
             color: Colors.black,
             fontSize: 24,
@@ -104,16 +104,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               "assets/images/ayujal_logo.png",
               width: 100,
               height: 100,
-              errorBuilder: (context, error, stackTrace) {
-                return const Text(
-                  'VAYUJAL',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                );
-              },
+              
             ),
           ),
         ],

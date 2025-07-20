@@ -10,7 +10,6 @@ import 'package:vayujal/screens/all_service_request_page.dart';
 import 'package:vayujal/screens/dashboard_screen.dart';
 import 'package:vayujal/screens/login_screen.dart';
 import 'package:vayujal/screens/service_personel_screen.dart';
-import 'screens/auth_wrapper.dart';
 import 'utils/constants.dart';
 
 void main() async {
@@ -61,11 +60,11 @@ class MyApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppConstants.primaryColor, width: 2),
+            borderSide: const BorderSide(color: Color.fromARGB(255, 21, 83, 134), width: 2),
           ),
         ),
       ),
-      home: const AuthWrapper(),
+      home: const LoginScreen(),
        routes: {
     '/home': (context) => const LoginScreen(),
     '/alldevice': (context) => const DevicesScreen(),

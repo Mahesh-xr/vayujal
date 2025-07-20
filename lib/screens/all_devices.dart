@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:vayujal/DatabaseAction/adminAction.dart';
 import 'package:vayujal/screens/new_service_request_page.dart';
 import 'package:vayujal/widgets/add_new_device_widgets/device_form.dart';
+import 'package:vayujal/widgets/navigations/NormalAppBar.dart';
 import 'package:vayujal/widgets/navigations/bottom_navigation.dart';
 import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
 import 'package:vayujal/widgets/device_widgets/device_card.dart';
 import 'package:vayujal/widgets/device_widgets/search_bar_widget.dart';
+import 'dart:convert';
 
 class DevicesScreen extends StatefulWidget {
   final Map<String, dynamic>? newDevice;
@@ -467,8 +469,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          appBar: const CustomAppBar(title: 'Device Details'),
-          body: SingleChildScrollView(
+appBar: Normalappbar(title: 'Device details'),          body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: _buildDeviceDetailsView(device),
           ),
@@ -504,8 +505,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          appBar: const CustomAppBar(title: 'Edit Device Details'),
-          body: SingleChildScrollView(
+           appBar: Normalappbar(title: 'Edit Device'),          
+      body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: DeviceForm(deviceToEdit: device),
           ),
@@ -525,46 +526,291 @@ class _DevicesScreenState extends State<DevicesScreen> {
     );
   }
 
-  Widget _buildDeviceDetailsView(Map<String, dynamic> device) {
-    final deviceInfo = device['deviceInfo'] ?? {};
-    final customerDetails = device['customerDetails'] ?? {};
-    final locationDetails = device['locationDetails'] ?? {};
-    final maintenanceContract = device['maintenanceContract'] ?? {};
+ Widget _buildDeviceDetailsView(Map<String, dynamic> device) {
+  final deviceInfo = device['deviceInfo'] ?? {};
+  final customerDetails = device['customerDetails'] ?? {};
+  final locationDetails = device['locationDetails'] ?? {};
+  final maintenanceContract = device['maintenanceContract'] ?? {};
+  
+  // Get photos list from deviceInfo
+  final photos = deviceInfo['photos'] as List<dynamic>? ?? [];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildDetailSection('Device Information', [
-          _buildDetailRow('Model', deviceInfo['model'] ?? 'N/A'),
-          _buildDetailRow('AWG Serial Number', deviceInfo['awgSerialNumber'] ?? 'N/A'),
-          _buildDetailRow('Dispenser', deviceInfo['dispenserDetails'] ?? 'N/A'),
-          _buildDetailRow('Power Source', deviceInfo['powerSource'] ?? 'N/A'),
-          _buildDetailRow('Installation Date', deviceInfo['installationDate'] ?? 'N/A'),
-        ]),
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Photo Carousel Section - only show if photos exist
+      if (photos.isNotEmpty) ...[
+        _buildPhotoCarousel(photos),
         const SizedBox(height: 20),
-        _buildDetailSection('Customer Details', [
-          _buildDetailRow('Name', customerDetails['name'] ?? 'N/A'),
-          _buildDetailRow('Company', customerDetails['company'] ?? 'N/A'),
-          _buildDetailRow('Phone', customerDetails['phone'] ?? 'N/A'),
-          _buildDetailRow('Email', customerDetails['email'] ?? 'N/A'),
-        ]),
-        const SizedBox(height: 20),
-        _buildDetailSection('Location Details', [
-          _buildDetailRow('City', locationDetails['city'] ?? 'N/A'),
-          _buildDetailRow('State', locationDetails['state'] ?? 'N/A'),
-          _buildDetailRow('Full Address', locationDetails['fullAddress'] ?? 'N/A'),
-        ]),
-        const SizedBox(height: 20),
-        _buildDetailSection('Maintenance Contract', [
-          _buildDetailRow('Annual Contract', maintenanceContract['annualContract'] == true ? 'Yes' : 'No'),
-          _buildDetailRow('AMC Type', maintenanceContract['amcType'] ?? 'N/A'),
-          _buildDetailRow('AMC Start Date', maintenanceContract['amcStartDate'] ?? 'N/A'),
-          _buildDetailRow('AMC End Date', maintenanceContract['amcEndDate'] ?? 'N/A'),
-        ]),
       ],
-    );
-  }
+      
+      _buildDetailSection('Device Information', [
+        _buildDetailRow('Model', deviceInfo['model'] ?? 'N/A'),
+        _buildDetailRow('AWG Serial Number', deviceInfo['awgSerialNumber'] ?? 'N/A'),
+        _buildDetailRow('Dispenser', deviceInfo['dispenserDetails'] ?? 'N/A'),
+        _buildDetailRow('Power Source', deviceInfo['powerSource'] ?? 'N/A'),
+        _buildDetailRow('Installation Date', deviceInfo['installationDate'] ?? 'N/A'),
+      ]),
+      const SizedBox(height: 20),
+      _buildDetailSection('Customer Details', [
+        _buildDetailRow('Name', customerDetails['name'] ?? 'N/A'),
+        _buildDetailRow('Company', customerDetails['company'] ?? 'N/A'),
+        _buildDetailRow('Phone', customerDetails['phone'] ?? 'N/A'),
+        _buildDetailRow('Email', customerDetails['email'] ?? 'N/A'),
+      ]),
+      const SizedBox(height: 20),
+      _buildDetailSection('Location Details', [
+        _buildDetailRow('City', locationDetails['city'] ?? 'N/A'),
+        _buildDetailRow('State', locationDetails['state'] ?? 'N/A'),
+        _buildDetailRow('Full Address', locationDetails['fullAddress'] ?? 'N/A'),
+      ]),
+      const SizedBox(height: 20),
+      _buildDetailSection('Maintenance Contract', [
+        _buildDetailRow('Annual Contract', maintenanceContract['annualContract'] == true ? 'Yes' : 'No'),
+        _buildDetailRow('AMC Type', maintenanceContract['amcType'] ?? 'N/A'),
+        _buildDetailRow('AMC Start Date', maintenanceContract['amcStartDate'] ?? 'N/A'),
+        _buildDetailRow('AMC End Date', maintenanceContract['amcEndDate'] ?? 'N/A'),
+      ]),
+    ],
+  );
+}
 
+Widget _buildPhotoCarousel(List<dynamic> photos) {
+  final PageController pageController = PageController();
+  
+  return Card(
+    color: Colors.white,
+    elevation: 2,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text(
+                'Device Photos',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${photos.length} photo${photos.length > 1 ? 's' : ''}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 200,
+            child: PageView.builder(
+              controller: pageController,
+              itemCount: photos.length,
+              itemBuilder: (context, index) {
+                final photo = photos[index];
+                return GestureDetector(
+                  onTap: () => _showFullScreenImage(photo),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: _buildImageWidget(photo),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (photos.length > 1) ...[
+            const SizedBox(height: 12),
+            _buildPhotoIndicators(photos.length, pageController),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildImageWidget(dynamic photo) {
+  // Handle different photo formats (URL string, File path, base64, etc.)
+  if (photo is String) {
+    if (photo.startsWith('http')) {
+      // Network image
+      return Image.network(
+        photo,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImageError();
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return _buildImageLoading();
+        },
+      );
+    } else if (photo.startsWith('data:image')) {
+      // Base64 image
+      try {
+        final bytes = base64Decode(photo.split(',').last);
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildImageError();
+          },
+        );
+      } catch (e) {
+        return _buildImageError();
+      }
+    } else {
+      // File path
+      return Image.asset(
+        photo,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildImageError();
+        },
+      );
+    }
+  }
+  
+  // Default error case
+  return _buildImageError();
+}
+
+Widget _buildImageError() {
+  return Container(
+    width: double.infinity,
+    height: double.infinity,
+    color: Colors.grey[200],
+    child: const Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.broken_image,
+          size: 48,
+          color: Colors.grey,
+        ),
+        SizedBox(height: 8),
+        Text(
+          'Image not available',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildImageLoading() {
+  return Container(
+    width: double.infinity,
+    height: double.infinity,
+    color: Colors.grey[100],
+    child: const Center(
+      child: CircularProgressIndicator(),
+    ),
+  );
+}
+
+Widget _buildPhotoIndicators(int photoCount, PageController pageController) {
+  return StatefulBuilder(
+    builder: (context, setState) {
+      int currentPage = 0;
+      
+      pageController.addListener(() {
+        int page = pageController.page?.round() ?? 0;
+        if (page != currentPage) {
+          setState(() {
+            currentPage = page;
+          });
+        }
+      });
+      
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(photoCount, (index) {
+          return GestureDetector(
+            onTap: () {
+              pageController.animateToPage(
+                index,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: index == currentPage 
+                    ? Colors.grey[800] 
+                    : Colors.grey[400],
+              ),
+            ),
+          );
+        }),
+      );
+    },
+  );
+}
+
+void _showFullScreenImage(dynamic photo) {
+  showDialog(
+    context: context,
+    barrierColor: Colors.black87,
+    builder: (context) {
+      return Dialog.fullscreen(
+        backgroundColor: Colors.black,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                panEnabled: true,
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: _buildImageWidget(photo),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 30,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
   Widget _buildDetailSection(String title, List<Widget> children) {
     return Card(
       color: Colors.white,

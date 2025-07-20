@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:vayujal/DatabaseAction/AdminHelper.dart';
 import 'package:vayujal/DatabaseAction/adminAction.dart';
 import 'package:vayujal/screens/all_service_request_page.dart';
+import 'package:vayujal/widgets/navigations/NormalAppBar.dart';
 import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
 import 'package:vayujal/widgets/new_service_request_widgets/customer_detials_form.dart';
 import 'package:vayujal/widgets/new_service_request_widgets/equipment_details_form.dart.dart';
@@ -44,6 +47,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
   // Technician dropdown data
   List<Map<String, dynamic>> _technicians = [];
   bool _isLoadingTechnicians = true;
+  
 
   @override
   void initState() {
@@ -252,10 +256,15 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
         };
 
         // Prepare service details
+
+        String specificAdminName = await AdminHelper.getFormattedAdminName(
+              FirebaseAuth.instance.currentUser?.uid,
+            );
         Map<String, dynamic> serviceDetails = {
           'requestType': _customerComplaint ? 'customer_complaint' : 'general_maintenance',          
           'comments': _commentController.text,
           'assignedTo': _assignedTo,
+          'assignedBy': specificAdminName,
           'addressByDate': _addressByDate != null ? Timestamp.fromDate(_addressByDate!) : null,
         };
 
@@ -267,20 +276,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
           deviceId: widget.deviceToService?['deviceInfo']?['awgSerialNumber'],
         );
 
-        // If technician is assigned, create task immediately
-        if (_assignedTo != null && _assignedTo!.isNotEmpty) {
-          try {
-            String taskId = await AdminAction.assignTaskToEmployee(
-              serviceRequestId: srId,
-              employeeId: _assignedTo!,
-              assignedBy: 'ADMIN001', // Replace with actual admin ID
-            );
-            
-            debugPrint('✅ Task created and assigned: $taskId');
-          } catch (e) {
-            debugPrint('⚠️ Service request created but task assignment failed: $e');
-          }
-        }
+      
 
         // Hide loading indicator
         Navigator.of(context).pop();
@@ -336,9 +332,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: CustomAppBar(
-        title: 'New Service Request',
-      ),
+     appBar: Normalappbar(title: 'New Service Request'),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(

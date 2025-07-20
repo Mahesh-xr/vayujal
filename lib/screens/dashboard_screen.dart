@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:vayujal/widgets/dashboard/quick_actions_section.dart';
 import 'package:vayujal/widgets/dashboard/status_cards_grid.dart';
 import 'package:vayujal/widgets/navigations/bottom_navigation.dart';
-
 import '../widgets/navigations/custom_app_bar.dart' show CustomAppBar;
 
 class DashboardScreen extends StatelessWidget {
@@ -29,7 +28,7 @@ class DashboardScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          StatusCardsGrid(),
+          AdminStatusCardsGrid(),
           SizedBox(height: 32),
           QuickActionsSection(),
         ],

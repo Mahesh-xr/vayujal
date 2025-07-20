@@ -253,8 +253,13 @@ class _ServiceDetailsPageState extends State<ServiceDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: CustomAppBar(
-        title: 'Service Details',
+      appBar: AppBar(
+        title: Text('Service Details'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        centerTitle: true,
+        
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

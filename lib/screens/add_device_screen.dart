@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vayujal/widgets/navigations/NormalAppBar.dart';
 import '../widgets/navigations/custom_app_bar.dart';
 import '../widgets/add_new_device_widgets/device_form.dart';
 
@@ -18,7 +19,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[80],
-      appBar: const CustomAppBar(title: 'Add New Device'),
+      appBar: const Normalappbar(title: 'Add New Device'),
       body: const SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: DeviceForm(),

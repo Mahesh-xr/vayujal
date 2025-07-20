@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 class AdminProfileSetupPage extends StatefulWidget {
   @override
@@ -13,15 +16,36 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _organizationController = TextEditingController();
-  final _designationController = TextEditingController();
   
   bool _isLoading = false;
   bool _isLoadingProfile = true;
-  bool _isEditingMode = false; // Toggle between edit and view mode
+  bool _isEditingMode = false;
+  bool _isUploadingImage = false;
   String _profileImageUrl = '';
+  String _selectedDesignation = 'Admin';
+  File? _selectedImage;
+  
+  // Designation options
+  final List<String> _designations = [
+    'Admin',
+    'Technician',
+    'Senior Technician',
+    'Lead Technician',
+    'Supervisor',
+    'Manager',
+    'Engineer',
+    'Senior Engineer',
+    'Field Engineer',
+    'Technical Lead',
+    'Team Leader',
+    'Project Manager',
+    'Operations Manager',
+  ];
   
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -35,7 +59,6 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
     _emailController.dispose();
     _phoneController.dispose();
     _organizationController.dispose();
-    _designationController.dispose();
     super.dispose();
   }
 
@@ -52,7 +75,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
             _emailController.text = data['email'] ?? user.email ?? '';
             _phoneController.text = data['mobileNumber'] ?? '';
             _organizationController.text = data['employeeId'] ?? '';
-            _designationController.text = data['designation'] ?? '';
+            _selectedDesignation = data['designation'] ?? 'Admin';
             _profileImageUrl = data['profileImageUrl'] ?? '';
           });
         } else {
@@ -70,6 +93,119 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
       setState(() {
         _isLoadingProfile = false;
       });
+    }
+  }
+
+  // Pick image from camera
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 800,
+        maxHeight: 600,
+        imageQuality: 70,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+        await _uploadImageToFirebase();
+      }
+    } catch (e) {
+      _showSnackBar('Error picking image from camera: $e', Colors.red);
+    }
+  }
+
+  // Pick image from gallery
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 600,
+        imageQuality: 70,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+        await _uploadImageToFirebase();
+      }
+    } catch (e) {
+      _showSnackBar('Error picking image from gallery: $e', Colors.red);
+    }
+  }
+
+  // Upload image to Firebase Storage
+  Future<void> _uploadImageToFirebase() async {
+    if (_selectedImage == null) return;
+
+    setState(() {
+      _isUploadingImage = true;
+    });
+
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        // Create a unique filename
+        final fileName = 'profile_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        
+        // Upload to Firebase Storage
+        final Reference storageRef = _storage.ref().child('profile_images_admins').child(fileName);
+        final UploadTask uploadTask = storageRef.putFile(_selectedImage!);
+        
+        // Show upload progress
+        uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+          final progress = snapshot.bytesTransferred / snapshot.totalBytes;
+          print('Upload progress: ${(progress * 100).toStringAsFixed(2)}%');
+        });
+
+        // Wait for upload to complete
+        final TaskSnapshot snapshot = await uploadTask;
+        final String downloadUrl = await snapshot.ref.getDownloadURL();
+        
+        // Delete old image if exists
+        if (_profileImageUrl.isNotEmpty) {
+          try {
+            await _storage.refFromURL(_profileImageUrl).delete();
+          } catch (e) {
+            print('Error deleting old image: $e');
+          }
+        }
+        
+        setState(() {
+          _profileImageUrl = downloadUrl;
+        });
+        
+        _showSnackBar('Profile picture uploaded successfully!', Colors.green);
+      }
+    } catch (e) {
+      _showSnackBar('Error uploading image: $e', Colors.red);
+    } finally {
+      setState(() {
+        _isUploadingImage = false;
+        _selectedImage = null;
+      });
+    }
+  }
+
+  // Remove profile image
+  Future<void> _removeProfileImage() async {
+    if (_profileImageUrl.isEmpty) return;
+
+    try {
+      // Delete from Firebase Storage
+      await _storage.refFromURL(_profileImageUrl).delete();
+      
+      setState(() {
+        _profileImageUrl = '';
+      });
+      
+      _showSnackBar('Profile picture removed successfully!', Colors.orange);
+    } catch (e) {
+      _showSnackBar('Error removing image: $e', Colors.red);
     }
   }
 
@@ -96,7 +232,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
           'email': _emailController.text.trim(),
           'mobileNumber': _phoneController.text.trim(),
           'employeeId': _organizationController.text.trim(),
-          'designation': _designationController.text.trim(),
+          'designation': _selectedDesignation,
           'profileImageUrl': _profileImageUrl,
           'uid': user.uid,
           'updatedAt': FieldValue.serverTimestamp(),
@@ -206,18 +342,17 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      // TODO: Implement camera functionality
-                      _showSnackBar('Camera functionality to be implemented', Colors.orange);
+                      _pickImageFromCamera();
                     },
                     child: Column(
                       children: [
                         Container(
                           padding: EdgeInsets.all(15),
                           decoration: BoxDecoration(
-                            color: Colors.black,
+                            color: Colors.blue.withOpacity(0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(Icons.camera_alt, size: 30, color: Colors.black),
+                          child: Icon(Icons.camera_alt, size: 30, color: Colors.blue),
                         ),
                         SizedBox(height: 8),
                         Text('Camera'),
@@ -227,8 +362,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      // TODO: Implement gallery functionality
-                      _showSnackBar('Gallery functionality to be implemented', Colors.orange);
+                      _pickImageFromGallery();
                     },
                     child: Column(
                       children: [
@@ -249,10 +383,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                     GestureDetector(
                       onTap: () {
                         Navigator.pop(context);
-                        setState(() {
-                          _profileImageUrl = '';
-                        });
-                        _showSnackBar('Profile picture removed', Colors.orange);
+                        _removeProfileImage();
                       },
                       child: Column(
                         children: [
@@ -302,13 +433,6 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
         foregroundColor: Colors.black,
         elevation: 0,
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.red),
-            onPressed: _showLogoutDialog,
-            tooltip: 'Logout',
-          ),
-        ],
       ),
       body: _isLoadingProfile
           ? Center(child: CircularProgressIndicator())
@@ -330,28 +454,49 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                                 width: 3,
                               ),
                             ),
-                            child: CircleAvatar(
-                              radius: 60,
-                              backgroundColor: Colors.grey[300],
-                              backgroundImage: _profileImageUrl.isNotEmpty
-                                  ? NetworkImage(_profileImageUrl)
-                                  : null,
-                              child: _profileImageUrl.isEmpty
-                                  ? Icon(
-                                      Icons.admin_panel_settings,
-                                      size: 60,
-                                      color: Colors.grey[600],
-                                    )
-                                  : null,
+                            child: Stack(
+                              children: [
+                                CircleAvatar(
+                                  radius: 60,
+                                  backgroundColor: Colors.grey[300],
+                                  backgroundImage: _selectedImage != null 
+                                      ? FileImage(_selectedImage!) 
+                                      : (_profileImageUrl.isNotEmpty
+                                          ? NetworkImage(_profileImageUrl) 
+                                          : null) as ImageProvider?,
+                                  child: (_selectedImage == null && _profileImageUrl.isEmpty)
+                                      ? Icon(
+                                          Icons.admin_panel_settings,
+                                          size: 60,
+                                          color: Colors.grey[600],
+                                        )
+                                      : null,
+                                ),
+                                if (_isUploadingImage)
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.5),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 3,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
-                          if (_isEditingMode)
+                          if (_isEditingMode && !_isUploadingImage)
                             Positioned(
                               bottom: 0,
                               right: 0,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.black,
+                                  color: Colors.blue,
                                   shape: BoxShape.circle,
                                   border: Border.all(color: Colors.white, width: 2),
                                 ),
@@ -424,7 +569,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                       icon: Icons.business,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your organization';
+                          return 'Please enter your employee ID';
                         }
                         return null;
                       },
@@ -432,17 +577,8 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                     
                     SizedBox(height: 16),
                     
-                    _buildProfileField(
-                      controller: _designationController,
-                      label: 'Designation',
-                      icon: Icons.work,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your designation';
-                        }
-                        return null;
-                      },
-                    ),
+                    // Designation Dropdown Field
+                    _buildDesignationField(),
                     
                     SizedBox(height: 30),
                     
@@ -451,7 +587,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : (_isEditingMode ? _saveProfile : _toggleEditMode),
+                        onPressed: (_isLoading || _isUploadingImage) ? null : (_isEditingMode ? _saveProfile : _toggleEditMode),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _isEditingMode ? Colors.green : Colors.blue,
                           disabledBackgroundColor: Colors.grey,
@@ -460,7 +596,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                           ),
                           elevation: 2,
                         ),
-                        child: _isLoading
+                        child: (_isLoading || _isUploadingImage)
                             ? Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -474,7 +610,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                                   ),
                                   SizedBox(width: 10),
                                   Text(
-                                    'Saving...',
+                                    _isUploadingImage ? 'Uploading...' : 'Saving...',
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 ],
@@ -511,6 +647,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                           onPressed: () {
                             setState(() {
                               _isEditingMode = false;
+                              _selectedImage = null;
                             });
                             // Reload profile data to revert changes
                             _loadAdminProfile();
@@ -645,6 +782,97 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
                     style: TextStyle(
                       fontSize: 16,
                       color: controller.text.isEmpty ? Colors.grey[400] : Colors.black87,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Widget _buildDesignationField() {
+    if (_isEditingMode) {
+      // Show Dropdown in edit mode
+      return DropdownButtonFormField<String>(
+        value: _selectedDesignation,
+        decoration: InputDecoration(
+          labelText: 'Designation',
+          prefixIcon: Icon(Icons.work, color: Colors.grey.shade500),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.blue, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+        ),
+        items: _designations.map((String designation) {
+          return DropdownMenuItem<String>(
+            value: designation,
+            child: Text(designation),
+          );
+        }).toList(),
+        onChanged: (String? newValue) {
+          if (newValue != null) {
+            setState(() {
+              _selectedDesignation = newValue;
+            });
+          }
+        },
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select a designation';
+          }
+          return null;
+        },
+      );
+    } else {
+      // Show text display in view mode
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.work, color: Colors.grey.shade600),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Designation',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    _selectedDesignation.isEmpty ? 'Not set' : _selectedDesignation,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _selectedDesignation.isEmpty ? Colors.grey[400] : Colors.black87,
                       fontWeight: FontWeight.w400,
                     ),
                   ),

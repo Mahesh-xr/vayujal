@@ -44,6 +44,13 @@ class SearchBarWidget extends StatelessWidget {
                   fontSize: 16,
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                // Remove all TextField borders
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
               ),
               style: const TextStyle(
                 fontSize: 16,
@@ -51,6 +58,23 @@ class SearchBarWidget extends StatelessWidget {
               ),
             ),
           ),
+          // Optional: Add clear button if you want
+          if (controller != null && onClear != null)
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: controller!,
+              builder: (context, value, child) {
+                return value.text.isNotEmpty
+                    ? GestureDetector(
+                        onTap: onClear,
+                        child: Icon(
+                          Icons.clear,
+                          color: Colors.grey.shade600,
+                          size: 20,
+                        ),
+                      )
+                    : const SizedBox.shrink();
+              },
+            ),
         ],
       ),
     );

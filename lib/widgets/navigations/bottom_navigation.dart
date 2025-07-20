@@ -16,7 +16,7 @@ class BottomNavigation extends StatelessWidget {
 
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/dashboard');
         break;
       case 1:
         Navigator.pushReplacementNamed(context, '/alldevice');
