@@ -422,4 +422,367 @@ class AdminAction {
     }
   }
   
+
+   static Future<bool> updateServiceRequest({
+    required String srId,
+    String? newAssignedTo,
+    String? status,
+    String? comments,
+    DateTime? newAddressByDate,
+    String? requestType,
+    String? assignedTechnician,
+  }) async {
+    try {
+      Map<String, dynamic> updateData = {
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      // Update service details if provided
+      if (newAssignedTo != null) {
+        updateData['serviceDetails.assignedTo'] = newAssignedTo;
+        updateData['serviceDetails.reassignedAt'] = FieldValue.serverTimestamp();
+      }
+      
+      if (status != null) {
+        updateData['status'] = status;
+      }
+
+      if (comments != null) {
+        updateData['serviceDetails.comments'] = comments;
+      }
+
+      if (newAddressByDate != null) {
+        updateData['serviceDetails.addressByDate'] = Timestamp.fromDate(newAddressByDate);
+      }
+
+      if (requestType != null) {
+        updateData['serviceDetails.requestType'] = requestType;
+      }
+        if (requestType != null) {
+        updateData['serviceDetails.assignedTechnician'] = assignedTechnician;
+      }
+
+      // Update the document
+      await _firestore.collection('serviceRequests').doc(srId).update(updateData);
+      
+      // Create notification for the newly assigned technician
+      if (newAssignedTo != null) {
+        await _createAssignmentNotification(srId, newAssignedTo, isReassignment: true);
+      }
+
+      print("✅ Service request updated successfully: $srId");
+      return true;
+    } catch (e) {
+      print("❌ Error updating service request: $e");
+      throw Exception('Failed to update service request: $e');
+    }
+  }
+
+  /// Create notification for technician assignment
+  static Future<void> _createAssignmentNotification(
+    String srId, 
+    String technicianEmpId, 
+    {bool isReassignment = false}
+  ) async {
+    try {
+      // Get technician details
+      QuerySnapshot techQuery = await _firestore
+          .collection('technicians')
+          .where('employeeId', isEqualTo: technicianEmpId)
+          .limit(1)
+          .get();
+
+      if (techQuery.docs.isNotEmpty) {
+        String technicianUid = techQuery.docs.first.id;
+        
+        // Create notification document
+        await _firestore.collection('notifications').add({
+          'userId': technicianUid,
+          'userType': 'technician',
+          'title': isReassignment 
+              ? 'Service Request Reassigned'
+              : 'New Service Request Assigned',
+          'message': isReassignment 
+              ? 'You have been reassigned to service request: $srId'
+              : 'You have been assigned a new service request: $srId',
+          'type': 'service_assignment',
+          'serviceRequestId': srId,
+          'isRead': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        print("✅ Notification created for technician: $technicianEmpId");
+      }
+    } catch (e) {
+      print("❌ Error creating notification: $e");
+    }
+  }
+
+  /// Get notifications for a user
+  static Future<List<Map<String, dynamic>>> getUserNotifications(String userId) async {
+    try {
+      QuerySnapshot snapshot = await _firestore
+          .collection('notifications')
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      print("❌ Error getting notifications: $e");
+      return [];
+    }
+  }
+
+  /// Mark notification as read
+  static Future<void> markNotificationAsRead(String notificationId) async {
+    try {
+      await _firestore.collection('notifications').doc(notificationId).update({
+        'isRead': true,
+        'readAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print("❌ Error marking notification as read: $e");
+    }
+  }
+
+  /// Get unread notification count
+  static Future<int> getUnreadNotificationCount(String userId) async {
+    try {
+      QuerySnapshot snapshot = await _firestore
+          .collection('notifications')
+          .where('userId', isEqualTo: userId)
+          .where('isRead', isEqualTo: false)
+          .get();
+
+      return snapshot.docs.length;
+    } catch (e) {
+      print("❌ Error getting unread notification count: $e");
+      return 0;
+    }
+  }
+
+  /// Update the existing createServiceRequest method to include notification
+  /// 
+  /// 
+  /// 
+   static Future<Map<String, dynamic>?> getServiceHistoryBySrId(String srId) async {
+    try {
+      // Query the serviceHistory collection using srId as document ID
+      DocumentSnapshot doc = await _firestore
+          .collection('serviceHistory')
+          .doc(srId)
+          .get();
+
+      if (doc.exists) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        
+        // Add document ID to the data for reference
+        data['id'] = doc.id;
+        
+        return data;
+      } else {
+        // Document doesn't exist
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching service history for SR ID $srId: $e');
+      throw Exception('Failed to fetch service history: $e');
+    }
+  }
+
+  /// Alternative method if you're using srNumber field instead of document ID
+  /// Get service history by SR Number field
+  static Future<Map<String, dynamic>?> getServiceHistoryBySrNumber(String srNumber) async {
+    try {
+      // Query the serviceHistory collection using srNumber field
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('serviceHistory')
+          .where('srNumber', isEqualTo: srNumber)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot doc = querySnapshot.docs.first;
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        
+        // Add document ID to the data for reference
+        data['id'] = doc.id;
+        
+        return data;
+      } else {
+        // No document found with this srNumber
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching service history for SR Number $srNumber: $e');
+      throw Exception('Failed to fetch service history: $e');
+    }
+  }
+
+  /// Get all service history records for a specific AWG serial number
+  /// Useful for viewing complete service history of a device
+  static Future<List<Map<String, dynamic>>> getServiceHistoryByAwgSerial(String awgSerialNumber) async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('serviceHistory')
+          .where('awgSerialNumber', isEqualTo: awgSerialNumber)
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      List<Map<String, dynamic>> serviceHistoryList = [];
+      
+      for (DocumentSnapshot doc in querySnapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        serviceHistoryList.add(data);
+      }
+
+      return serviceHistoryList;
+    } catch (e) {
+      print('Error fetching service history for AWG Serial $awgSerialNumber: $e');
+      throw Exception('Failed to fetch service history: $e');
+    }
+  }
+
+  /// Get service history with pagination
+  /// Useful for loading large datasets efficiently
+  static Future<List<Map<String, dynamic>>> getServiceHistoryPaginated({
+    int limit = 20,
+    DocumentSnapshot? startAfter,
+    String? status,
+    String? technician,
+  }) async {
+    try {
+      Query query = _firestore
+          .collection('serviceHistory')
+          .orderBy('timestamp', descending: true);
+
+      // Add filters if provided
+      if (status != null && status.isNotEmpty) {
+        query = query.where('status', isEqualTo: status);
+      }
+      
+      if (technician != null && technician.isNotEmpty) {
+        query = query.where('technician', isEqualTo: technician);
+      }
+
+      // Add pagination
+      if (startAfter != null) {
+        query = query.startAfterDocument(startAfter);
+      }
+      
+      query = query.limit(limit);
+
+      QuerySnapshot querySnapshot = await query.get();
+      
+      List<Map<String, dynamic>> serviceHistoryList = [];
+      
+      for (DocumentSnapshot doc in querySnapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        serviceHistoryList.add(data);
+      }
+
+      return serviceHistoryList;
+    } catch (e) {
+      print('Error fetching paginated service history: $e');
+      throw Exception('Failed to fetch service history: $e');
+    }
+  }
+
+  /// Get service statistics
+  /// Returns counts and analytics for service history
+  static Future<Map<String, dynamic>> getServiceHistoryStats() async {
+    try {
+      // Get all service history records
+      QuerySnapshot allDocs = await _firestore
+          .collection('serviceHistory')
+          .get();
+
+      Map<String, int> statusCounts = {};
+      Map<String, int> technicianCounts = {};
+      Map<String, int> issueTypeCounts = {};
+      int totalServices = allDocs.docs.length;
+
+      for (DocumentSnapshot doc in allDocs.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        
+        // Count by status
+        String status = data['status'] ?? 'unknown';
+        statusCounts[status] = (statusCounts[status] ?? 0) + 1;
+        
+        // Count by technician
+        String technician = data['technician'] ?? 'unknown';
+        technicianCounts[technician] = (technicianCounts[technician] ?? 0) + 1;
+        
+        // Count by issue type
+        String issueType = data['issueType'] ?? 'unknown';
+        issueTypeCounts[issueType] = (issueTypeCounts[issueType] ?? 0) + 1;
+      }
+
+      return {
+        'totalServices': totalServices,
+        'statusCounts': statusCounts,
+        'technicianCounts': technicianCounts,
+        'issueTypeCounts': issueTypeCounts,
+      };
+    } catch (e) {
+      print('Error fetching service history stats: $e');
+      throw Exception('Failed to fetch service history statistics: $e');
+    }
+  }
+
+  /// Update service history record
+  /// Used for updating existing service records
+  static Future<bool> updateServiceHistory(String srId, Map<String, dynamic> updates) async {
+    try {
+      await _firestore
+          .collection('serviceHistory')
+          .doc(srId)
+          .update(updates);
+      
+      return true;
+    } catch (e) {
+      print('Error updating service history for SR ID $srId: $e');
+      throw Exception('Failed to update service history: $e');
+    }
+  }
+
+  /// Delete service history record
+  /// Used for removing service records (use with caution)
+  static Future<bool> deleteServiceHistory(String srId) async {
+    try {
+      await _firestore
+          .collection('serviceHistory')
+          .doc(srId)
+          .delete();
+      
+      return true;
+    } catch (e) {
+      print('Error deleting service history for SR ID $srId: $e');
+      throw Exception('Failed to delete service history: $e');
+    }
+  }
+
+  /// Create new service history record
+  /// Used when a service is completed
+  static Future<bool> createServiceHistory(String srId, Map<String, dynamic> serviceData) async {
+    try {
+      await _firestore
+          .collection('serviceHistory')
+          .doc(srId)
+          .set(serviceData);
+      
+      return true;
+    } catch (e) {
+      print('Error creating service history for SR ID $srId: $e');
+      throw Exception('Failed to create service history: $e');
+    }
+  } 
 }

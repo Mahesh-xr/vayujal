@@ -42,6 +42,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
   bool _generalMaintenance = false;
   bool _customerComplaint = false;
   String? _assignedTo;
+  String? _assignedTechnician; // This will store "name - empId"
   DateTime? _addressByDate = DateTime.now().add(const Duration(days: 2));
 
   // Technician dropdown data
@@ -77,6 +78,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
         // Set default assignment if technicians are available
         if (techs.isNotEmpty && _assignedTo == null) {
           _assignedTo = techs.first['empId'];
+          _assignedTechnician = '${techs.first['name']} - ${techs.first['empId']}';
         }
       });
       
@@ -117,10 +119,25 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
    
   }
 
+  // Helper method to get technician name by empId
+  String? _getTechnicianNameById(String? empId) {
+    if (empId == null) return null;
+    
+    final technician = _technicians.firstWhere(
+      (tech) => tech['empId'] == empId,
+      orElse: () => {},
+    );
+    
+    if (technician.isNotEmpty) {
+      return '${technician['name']} - ${technician['empId']}';
+    }
+    return null;
+  }
+
   // Widget for technician dropdown
   Widget _buildTechnicianDropdown() {
     return Card(
-      color:Colors.white,
+      color: Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -194,6 +211,7 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
                 onChanged: (String? value) {
                   setState(() {
                     _assignedTo = value;
+                    _assignedTechnician = _getTechnicianNameById(value);
                   });
                 },
                 validator: (value) {
@@ -256,14 +274,14 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
         };
 
         // Prepare service details
-
         String specificAdminName = await AdminHelper.getFormattedAdminName(
               FirebaseAuth.instance.currentUser?.uid,
             );
         Map<String, dynamic> serviceDetails = {
           'requestType': _customerComplaint ? 'customer_complaint' : 'general_maintenance',          
           'comments': _commentController.text,
-          'assignedTo': _assignedTo,
+          'assignedTo': _assignedTo, // This is the empId
+          'assignedTechnician': _assignedTechnician, // This is "name - empId"
           'assignedBy': specificAdminName,
           'addressByDate': _addressByDate != null ? Timestamp.fromDate(_addressByDate!) : null,
         };
@@ -275,8 +293,6 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
           serviceDetails: serviceDetails,
           deviceId: widget.deviceToService?['deviceInfo']?['awgSerialNumber'],
         );
-
-      
 
         // Hide loading indicator
         Navigator.of(context).pop();
@@ -299,11 +315,12 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
         debugPrint('Customer: ${_nameController.text} (${_companyController.text})');
         debugPrint('Contact: ${_phoneController.text} | ${_emailController.text}');
         debugPrint('Request Type: ${_customerComplaint ? 'Customer Complaint' : 'General Maintenance'}');
-        debugPrint('Assigned To: $_assignedTo');
+        debugPrint('Assigned To (EmpId): $_assignedTo');
+        debugPrint('Assigned Technician (Name - EmpId): $_assignedTechnician');
         debugPrint('Address By: $_addressByDate');
         debugPrint('Comments: ${_commentController.text}');
         
-        // Navigate  to all SR request screen
+        // Navigate to all SR request screen
         Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const AllServiceRequestsPage(),

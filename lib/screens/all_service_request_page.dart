@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:vayujal/DatabaseAction/adminAction.dart';
+import 'package:vayujal/screens/editSR.dart';
+import 'package:vayujal/widgets/navigations/NormalAppBar.dart';
+import 'package:vayujal/widgets/navigations/bottom_navigation.dart';
 import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
 import 'package:vayujal/pages/service_details_page.dart';
 
@@ -17,7 +20,7 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
   String _selectedFilter = 'All';
   final TextEditingController _searchController = TextEditingController();
 
-  final List<String> _filterOptions = ['All', 'In Progress', 'Delayed', 'Completed'];
+  final List<String> _filterOptions = ['All', 'Pending','In Progress', 'Delayed', 'Completed'];
 
   @override
   void initState() {
@@ -73,8 +76,10 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
 
   String _getStatusFromFilter(String filter) {
     switch (filter) {
-      case 'in_progress':
-        return 'In Progress';
+      case 'In Progress':
+        return 'in_progress';
+      case 'Pending':
+        return 'pending';
       case 'Delayed':
         return 'delayed';
       case 'Completed':
@@ -119,16 +124,19 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
   }
 
   Color _getStatusColor(String status) {
+    print('DEBUG: Getting color for status: $status');
     switch (status.toLowerCase()) {
+      
       case 'completed':
         return Colors.green;
-      case 'in progress':
+      case 'pending':
+        return Colors.orange;
+      case 'in_progress':
         return Colors.blue;
       case 'delayed':
         return Colors.red;
-      case 'pending':
       default:
-        return Colors.orange;
+        return Colors.grey;
     }
   }
 
@@ -148,6 +156,30 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
     }
   }
 
+  // Check if service request can be edited - FIXED VERSION
+  bool _canEditServiceRequest(Map<String, dynamic> serviceRequest) {
+    // Get status from both possible locations
+    String status = serviceRequest['serviceDetails']?['status'] ?? serviceRequest['status'] ?? 'pending';
+    
+    // Debug print to see what status values we're getting
+    print('DEBUG: Service Request Status: $status');
+    
+    // Allow editing for pending, in_progress, and delayed requests
+    List<String> editableStatuses = ['pending', 'in_progress', 'delayed'];
+    return editableStatuses.contains(status.toLowerCase());
+  }
+
+  // Show edit dialog
+  void _showEditDialog(Map<String, dynamic> serviceRequest) {
+    showDialog(
+      context: context,
+      builder: (context) => EditServiceRequestDialog(
+        serviceRequest: serviceRequest,
+        onUpdated: _loadServiceRequests, // Refresh the list after update
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -158,7 +190,7 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: CustomAppBar(
+      appBar: Normalappbar(
         title: 'Services',
       ),
       body: Column(
@@ -260,7 +292,14 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
                             String model = serviceRequest['equipmentDetails']?['model'] ?? 'Unknown Model';
                             String requestType = serviceRequest['serviceDetails']?['requestType'] ?? 'General Service';
                             String assignedDate = _formatDate(serviceRequest['serviceDetails']?['assignedDate'] ?? serviceRequest['createdAt']);
-                            String status = _getDisplayStatus(serviceRequest);
+                            String status = _getDisplayStatus(serviceRequest);  
+                            String serviceStatus =  serviceRequest['status'];
+                            String assignedTo = serviceRequest['serviceDetails']?['assignedTechnician'] ?? 'Unassigned';
+                            
+                            bool canEdit = _canEditServiceRequest(serviceRequest);
+                            
+                            // Debug print to see the edit status
+                            print('DEBUG: SR $srId - canEdit: $canEdit, status: ${serviceRequest['status']}, serviceDetails status: ${serviceRequest['serviceDetails']?['status']}');
                             
                             return Card(
                               color: Colors.grey.shade100,
@@ -286,7 +325,7 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      // Service Request ID and Status
+                                      // Service Request ID, Status, and Edit Button
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
@@ -300,27 +339,51 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
                                               ),
                                             ),
                                           ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: _getStatusColor(status).withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(
-                                                color: _getStatusColor(status),
-                                                width: 1,
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: _getStatusColor(status).withOpacity(0.1),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: _getStatusColor(serviceStatus),
+                                                    width: 1,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  status,
+                                                  style: TextStyle(
+                                                    color: _getStatusColor(serviceStatus),
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                            child: Text(
-                                              status,
-                                              style: TextStyle(
-                                                color: _getStatusColor(status),
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
+                                              // ALWAYS SHOW EDIT BUTTON FOR DEBUGGING
+                                              const SizedBox(width: 8),
+                                              InkWell(
+                                                onTap: () => _showEditDialog(serviceRequest),
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(4),
+                                                  decoration: BoxDecoration(
+                                                    color: canEdit 
+                                                        ? Colors.blue.withOpacity(0.1)
+                                                        : Colors.grey.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(6),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.edit,
+                                                    size: 16,
+                                                    color: canEdit ? Colors.blue : Colors.grey,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
+                                            ],
                                           ),
                                         ],
                                       ),
@@ -342,22 +405,31 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
                                       Text(
                                         requestType.replaceAll('_', ' ').toUpperCase(),
                                         style: TextStyle(
-                                          fontSize: 14,
+                                          fontSize: 12,
                                           color: Colors.grey[600],
                                         ),
                                       ),
                                       
-                                      const SizedBox(height: 8),
+
+                                      Text(
+                                            'Technician: $assignedTo',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+
                                       
                                       // Assigned Date
                                       Row(
                                         children: [
                                           Icon(
                                             Icons.schedule,
-                                            size: 16,
+                                            size: 14,
                                             color: Colors.grey[600],
                                           ),
                                           const SizedBox(width: 4),
+                            
                                           Text(
                                             'Assigned: $assignedDate',
                                             style: TextStyle(
@@ -378,6 +450,12 @@ class _AllServiceRequestsPageState extends State<AllServiceRequestsPage> {
           ),
         ],
       ),
+      bottomNavigationBar: BottomNavigation( 
+        currentIndex: 3, // 'Services' tab index
+        onTap: (currentIndex) => BottomNavigation.navigateTo(currentIndex, context),
+      ),
     );
+
+  
   }
 }
