@@ -38,7 +38,6 @@ class ServiceHistoryCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.keyboard_arrow_down),
             ],
           ),
         ),

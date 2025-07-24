@@ -27,7 +27,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _mobileController = TextEditingController();
   final _emailController = TextEditingController();
   
-  String _selectedDesignation = 'Technician';
+  String _selectedDesignation = 'Admin';
   XFile? _selectedImage;
   File? _selectedImageFile;
   bool _isLoading = false;
@@ -35,6 +35,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   String _profileImageUrl = '';
 
   final List<String> _designations = [
+    'Admin'
     'Technician',
     'Senior Technician',
     'Lead Technician',
@@ -58,6 +59,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user != null && user.email != null) {
       _emailController.text = user.email!;
+      _nameController.text = user.displayName ?? '';
     }
   }
 

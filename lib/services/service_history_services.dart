@@ -8,8 +8,8 @@ class ServiceHistoryService {
   Future<List<ServiceHistoryItem>> getServiceHistory(String serialNumber) async {
     try {
       QuerySnapshot querySnapshot = await _firestore
-          .collection('service_history')
-          .where('srNumber', isEqualTo: serialNumber)
+          .collection('serviceHistory')
+          .where('awgSerialNumber', isEqualTo: serialNumber)
           // .orderBy('serviceDate', descending: true)
           .get();
 

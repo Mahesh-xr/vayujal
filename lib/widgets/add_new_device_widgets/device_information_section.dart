@@ -56,58 +56,73 @@ class DeviceInformationSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           
-          // Model Dropdown
+          // Model Dropdown with validation
           CustomDropdown(
             label: 'Model',
             value: selectedModel,
-            items: const ['AWG Model', 'VJ - Home', 'VJ - Plus', 'VJ - Grand' ,'VJ - Ultra', 'VJ - Max'],
+            items: const ['AWG Model', 'VJ - Home', 'VJ - Plus', 'VJ - Grand', 'VJ - Ultra', 'VJ - Max'],
             onChanged: onModelChanged,
-          ),
-          const SizedBox(height: 16),
-
-                CustomTextField(
-            label: 'AWG Serial Number',
-            
-            controller: awgSerialNumberController,
             validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter serial number';
+              if (value == null || value.isEmpty || value == 'AWG Model') {
+                return 'Please select a model';
               }
               return null;
             },
           ),
           const SizedBox(height: 16),
-        
+
+          CustomTextField(
+            label: 'AWG Serial Number',
+            controller: awgSerialNumberController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter AWG serial number';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
           
           // Serial Number
           CustomTextField(
             label: 'Compressor Serial Number',
-            
             controller: serialNumberController,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter serial number';
+                return 'Please enter compressor serial number';
               }
               return null;
             },
           ),
           const SizedBox(height: 16),
           
-          // Dispenser Details
+          // Dispenser Details with validation
           CustomDropdown(
             label: 'Dispenser Details',
             value: selectedDispenser,
-            items: const ['Select', 'Standard Dual Dispenser', 'Premium Dispenser', 'Custom Configuration'],
+            items: const ['YES', 'NO'],
             onChanged: onDispenserChanged,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please select dispenser details';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           
-          // Power Source
+          // Power Source with validation
           CustomDropdown(
             label: 'Power source',
             value: selectedPowerSource,
-            items: const ['Select', '220V AC', '110V AC', ],
+            items: const ['EB Supply', 'Solar Supply', 'Hybrid Supply'],
             onChanged: onPowerSourceChanged,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please select a power source';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           

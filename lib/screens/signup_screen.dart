@@ -34,14 +34,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
       setState(() => _isLoading = true);
 
       try {
-        // Create user with Firebase Auth
+        // ✅ Create user with Firebase Auth
         UserCredential userCredential =
             await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
-        // Store additional user info in Firestore
+        // ✅ Update displayName
+        await userCredential.user!.updateDisplayName(_nameController.text.trim());
+        await userCredential.user!.reload();
+
+        // ✅ Save additional info in Firestore
         await _firestore.collection('admins').doc(userCredential.user!.uid).set({
           'fullName': _nameController.text.trim(),
           'email': _emailController.text.trim(),
@@ -53,7 +57,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           SnackBar(content: Text('Account created successfully!')),
         );
 
-        // Navigate to login screen
+        // ✅ Navigate to login screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -104,7 +108,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
               "assets/images/ayujal_logo.png",
               width: 100,
               height: 100,
-              
             ),
           ),
         ],
@@ -125,24 +128,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-
-              // Full Name
               _buildLabel('Full Name'),
               _buildTextField(_nameController, 'Enter your full name', false),
-
               const SizedBox(height: 24),
               _buildLabel('Email Address'),
-              _buildTextField(_emailController, 'Enter your email', false,
-                  email: true),
-
+              _buildTextField(_emailController, 'Enter your email', false, email: true),
               const SizedBox(height: 24),
               _buildLabel('Password'),
-              _buildTextField(
-                  _passwordController, 'At least 8 characters', true),
-
+              _buildTextField(_passwordController, 'At least 8 characters', true),
               const SizedBox(height: 24),
               _buildTermsCheckbox(),
-
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
@@ -181,8 +176,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => LoginScreen()),
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
                         );
                       },
                       child: const Text(
@@ -298,4 +292,3 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 }
-

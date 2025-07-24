@@ -10,6 +10,7 @@ import 'package:vayujal/screens/all_service_request_page.dart';
 import 'package:vayujal/screens/dashboard_screen.dart';
 import 'package:vayujal/screens/login_screen.dart';
 import 'package:vayujal/screens/service_personel_screen.dart';
+import 'package:vayujal/screens/splash_screen.dart';
 import 'utils/constants.dart';
 
 void main() async {
@@ -64,7 +65,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const LoginScreen(),
+      home: const SplashScreen(),
        routes: {
     '/home': (context) => const LoginScreen(),
     '/alldevice': (context) => const DevicesScreen(),

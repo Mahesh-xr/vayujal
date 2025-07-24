@@ -19,6 +19,32 @@ class _ServicePersonnelPageState extends State<ServicePersonnelPage> {
     super.dispose();
   }
 
+  // Get technician's job status and count
+  Future<Map<String, dynamic>> _getTechnicianJobStatus(String employeeId) async {
+    try {
+      // Query service requests where assignedTo matches employeeId and status is not complete
+      final QuerySnapshot serviceRequests = await _firestore
+          .collection('serviceRequests')
+          .where('serviceDetails.assignedTo', isEqualTo: employeeId)
+          .where('status', whereIn: ['pending', 'in_progress'])
+          .get();
+
+      final int jobCount = serviceRequests.docs.length;
+      final bool isAvailable = jobCount == 0;
+
+      return {
+        'isAvailable': isAvailable,
+        'jobCount': jobCount,
+      };
+    } catch (e) {
+      print('Error getting technician job status: $e');
+      return {
+        'isAvailable': true,
+        'jobCount': 0,
+      };
+    }
+  }
+
   // Delete technician
   Future<void> _deleteTechnician(String technicianId) async {
     try {
@@ -84,7 +110,6 @@ class _ServicePersonnelPageState extends State<ServicePersonnelPage> {
                 _buildDetailRow('Email', data['email'] ?? 'N/A'),
                 _buildDetailRow('Mobile', data['mobileNumber'] ?? 'N/A'),
                 _buildDetailRow('Employee ID', data['employeeId'] ?? 'N/A'),
-                _buildDetailRow('UID', data['uid'] ?? 'N/A'),
                 _buildDetailRow('Profile Complete', 
                   data['isProfileComplete'] == true ? 'Yes' : 'No'),
                 _buildDetailRow('Created At', 
@@ -134,6 +159,40 @@ class _ServicePersonnelPageState extends State<ServicePersonnelPage> {
     );
   }
 
+  // Build availability status widget
+  Widget _buildAvailabilityStatus(bool isAvailable, int jobCount) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 4,
+          ),
+          decoration: BoxDecoration(
+            color: isAvailable ? Colors.green[100] : Colors.red[100],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            isAvailable ? 'Available' : 'Unavailable',
+            style: TextStyle(
+              fontSize: 12,
+              color: isAvailable ? Colors.green[700] : Colors.red[700],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        SizedBox(width: 8),
+        Text(
+          '$jobCount ${jobCount == 1 ? 'job' : 'jobs'}',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -148,32 +207,6 @@ class _ServicePersonnelPageState extends State<ServicePersonnelPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Service Personnel',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'Admin access',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
                 SizedBox(height: 16),
                 // Search Bar
                 Container(
@@ -261,6 +294,7 @@ class _ServicePersonnelPageState extends State<ServicePersonnelPage> {
                   itemBuilder: (context, index) {
                     final technician = filteredTechnicians[index];
                     final data = technician.data() as Map<String, dynamic>;
+                    final employeeId = data['employeeId'] ?? '';
                     
                     return Container(
                       margin: EdgeInsets.only(bottom: 12),
@@ -278,10 +312,7 @@ class _ServicePersonnelPageState extends State<ServicePersonnelPage> {
                             backgroundColor: Colors.grey[300],
                             backgroundImage: data['profileImageUrl'] != null && 
                               data['profileImageUrl'] != 'sample'
-                              ? 
-                              // NetworkImage(data['profileImageUrl'])
-                              NetworkImage(data['profileImageUrl'])
-
+                              ? NetworkImage(data['profileImageUrl'])
                               : null,
                             child: data['profileImageUrl'] == null || 
                               data['profileImageUrl'] == 'sample'
@@ -311,35 +342,35 @@ class _ServicePersonnelPageState extends State<ServicePersonnelPage> {
                                   ),
                                 ),
                                 SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green[100],
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        'available',
+                                
+                                // Dynamic availability status and job count
+                                FutureBuilder<Map<String, dynamic>>(
+                                  future: _getTechnicianJobStatus(employeeId),
+                                  builder: (context, jobSnapshot) {
+                                    if (jobSnapshot.connectionState == ConnectionState.waiting) {
+                                      return Container(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      );
+                                    }
+                                    
+                                    if (jobSnapshot.hasError) {
+                                      return Text(
+                                        'Error loading status',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.green[700],
-                                          fontWeight: FontWeight.w500,
+                                          color: Colors.red,
                                         ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      '2 jobs', // You can make this dynamic based on actual jobs
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
+                                      );
+                                    }
+                                    
+                                    final jobData = jobSnapshot.data ?? {'isAvailable': true, 'jobCount': 0};
+                                    return _buildAvailabilityStatus(
+                                      jobData['isAvailable'] as bool,
+                                      jobData['jobCount'] as int,
+                                    );
+                                  },
                                 ),
                               ],
                             ),
@@ -402,10 +433,10 @@ class _ServicePersonnelPageState extends State<ServicePersonnelPage> {
           ),
         ],
       ),
-        bottomNavigationBar: BottomNavigation(
-      currentIndex: 2, // 'Devices' tab index
-      onTap:(currentIndex) => BottomNavigation.navigateTo(currentIndex, context) ,
-),
+      bottomNavigationBar: BottomNavigation(
+        currentIndex: 2, // 'Devices' tab index
+        onTap: (currentIndex) => BottomNavigation.navigateTo(currentIndex, context),
+      ),
     );
   }
 }

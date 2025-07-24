@@ -4,7 +4,9 @@ import 'package:vayujal/screens/service_details_screen.dart';
 import 'package:vayujal/services/service_history_services.dart';
 import 'package:vayujal/widgets/history/amc_history_card.dart';
 import 'package:vayujal/widgets/history/service_history_card.dart';
-import 'package:vayujal/widgets/navigations/custom_app_bar.dart';
+import 'package:vayujal/widgets/navigations/NormalAppBar.dart';
+
+
 
 class ServiceHistoryScreen extends StatefulWidget {
   final String serialNumber;
@@ -58,12 +60,9 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> with Single
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-        title: Text('History'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        centerTitle: true,
+        appBar: Normalappbar(
+        title: 'History'
+        
         
       ),      body: Column(
         children: [
@@ -76,6 +75,7 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> with Single
                 Tab(text: 'Service History'),
                 Tab(text: 'AMC History'),
               ],
+              
               labelColor: Colors.black,
               unselectedLabelColor: Colors.grey,
               indicatorColor: Colors.blue,
@@ -117,7 +117,7 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> with Single
           final service = serviceHistory[index];
           return ServiceHistoryCard(
             service: service,
-            onTap: () => _showServiceDetails(service),
+            onTap: () => _showServiceDetails(service.srNumber),
           );
         },
       ),
@@ -210,11 +210,11 @@ class _ServiceHistoryScreenState extends State<ServiceHistoryScreen> with Single
     );
   }
 
-  void _showServiceDetails(ServiceHistoryItem service) {
+  void _showServiceDetails(String srNumber) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ServiceDetailScreen(service: service),
+        builder: (context) => ServiceDetailScreen(srNumber: srNumber),
       ),
     );
   }
