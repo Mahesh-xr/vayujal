@@ -274,7 +274,7 @@ class FirebaseProfileActions {
 
       final Map<String, dynamic> profileData = {
         'uid': user.uid,
-        'name': name.trim(),
+        'fullName': name.trim(),
         'employeeId': employeeId.trim(),
         'mobileNumber': mobileNumber.trim(),
         'email': email.trim(),
