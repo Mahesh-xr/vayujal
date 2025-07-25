@@ -48,8 +48,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {                                                                                                                                                                                                                                                                                                                                                                                                                                                     g
-      _setLoading(true);
+    if (_formKey.currentState!.validate()) {                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+      _setLoading;(true);
 
       try {
         print('=== LOGIN ATTEMPT ===');
