@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'form_card.dart';
 import 'custom_checkbox_widget.dart';
 import 'comment_text_area.dart';
-import 'custom_dropdown.dart';
 import 'date_picker_field.dart';
 
 class ServiceRequestDetailsWidget extends StatelessWidget {
@@ -68,7 +67,17 @@ class ServiceRequestDetailsWidget extends StatelessWidget {
               CustomCheckboxWidget(
                 label: 'General Maintenance',
                 value: generalMaintenance,
-                onChanged: onGeneralMaintenanceChanged,
+                onChanged: (value) {
+                  if (value) {
+                    // If general maintenance is selected, uncheck customer complaint
+                    onGeneralMaintenanceChanged(true);
+                    if (customerComplaint) {
+                      onCustomerComplaintChanged(false);
+                    }
+                  } else {
+                    onGeneralMaintenanceChanged(false);
+                  }
+                },
               ),
               
               const SizedBox(height: 16),
@@ -76,19 +85,26 @@ class ServiceRequestDetailsWidget extends StatelessWidget {
               CustomCheckboxWidget(
                 label: 'Customer Complaint',
                 value: customerComplaint,
-                onChanged: onCustomerComplaintChanged,
+                onChanged: (value) {
+                  if (value) {
+                    // If customer complaint is selected, uncheck general maintenance
+                    onCustomerComplaintChanged(true);
+                    if (generalMaintenance) {
+                      onGeneralMaintenanceChanged(false);
+                    }
+                  } else {
+                    onCustomerComplaintChanged(false);
+                  }
+                },
               ),
               
               const SizedBox(height: 20),
               
               CommentTextArea(
                 hintText: 'Type your message...',
-
                 controller: commentController,
                 validator: commentValidator,
               ),
-              
-              
               
               // Address By Section
               const SizedBox(height: 8),

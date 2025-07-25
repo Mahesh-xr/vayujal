@@ -18,18 +18,21 @@ class CustomCheckboxWidget extends StatelessWidget {
       children: [
         SizedBox(
           height: 20,
-          width: 20,
-          child: Checkbox(
-            value: value,
-            onChanged: (newValue) => onChanged(newValue ?? false),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-            activeColor: Colors.blue[600],
-            checkColor: Colors.white,
-            side: BorderSide(
-              color: Colors.grey[400]!,
-              width: 1.5,
+          width: 40,
+          child:Transform.scale(
+            scale: 1.7,
+            child: Checkbox(
+              value: value,
+              onChanged: (newValue) => onChanged(newValue ?? false),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              activeColor: Colors.blue[600],
+              checkColor: Colors.white,
+              side: BorderSide(
+                color: Colors.grey[400]!,
+                width: 1,
+              ),
             ),
           ),
         ),

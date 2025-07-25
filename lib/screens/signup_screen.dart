@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -22,60 +21,114 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  void _showSnackBar(String message, {Color? backgroundColor}) {
+    if (!mounted) return;
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor ?? Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
       if (!_agreeToTerms) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('You must agree to the terms and conditions')),
-        );
+        _showSnackBar('You must agree to the terms and conditions', backgroundColor: Colors.red);
         return;
       }
 
       setState(() => _isLoading = true);
 
       try {
+        print('=== SIGNUP ATTEMPT ===');
+        print('Name: ${_nameController.text.trim()}');
+        print('Email: ${_emailController.text.trim()}');
+
         // ✅ Create user with Firebase Auth
-        UserCredential userCredential =
-            await _auth.createUserWithEmailAndPassword(
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+
+        print('User created successfully: ${userCredential.user?.uid}');
 
         // ✅ Update displayName
         await userCredential.user!.updateDisplayName(_nameController.text.trim());
         await userCredential.user!.reload();
 
-        // ✅ Save additional info in Firestore
+        // ✅ Save ONLY basic user info in Firestore (essential fields only)
+        // This will indicate a NEW USER who needs profile setup
         await _firestore.collection('admins').doc(userCredential.user!.uid).set({
           'fullName': _nameController.text.trim(),
           'email': _emailController.text.trim(),
           'uid': userCredential.user!.uid,
           'createdAt': FieldValue.serverTimestamp(),
+          'isProfileComplete': false, // Marker for new account
+          // Deliberately NOT adding extended fields:
+          // - employeeId (will be added in profile setup)
+          // - mobileNumber (will be added in profile setup)  
+          // - designation (will be added in profile setup)
+          // - department (will be added in profile setup)
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Account created successfully!')),
-        );
+        print('User document created in Firestore');
 
-        // ✅ Navigate to login screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-        );
-      } on FirebaseAuthException catch (e) {
-        String message = 'Something went wrong';
-        if (e.code == 'email-already-in-use') {
-          message = 'Email already in use';
-        } else if (e.code == 'weak-password') {
-          message = 'Password is too weak';
+        // ✅ Sign out the user immediately after account creation
+        // This forces them to go through the login process
+        await _auth.signOut();
+
+        _showSnackBar('Account created successfully! Please login to continue.', 
+                     backgroundColor: Colors.green);
+
+        // ✅ Navigate back to login screen after successful signup
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted) {
+          Navigator.pop(context); // Go back to login screen
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
+
+      } on FirebaseAuthException catch (e) {
+        print('Firebase Auth Error: ${e.code} - ${e.message}');
+        
+        String errorMessage = 'Account creation failed';
+        switch (e.code) {
+          case 'email-already-in-use':
+            errorMessage = 'An account already exists with this email address.';
+            break;
+          case 'weak-password':
+            errorMessage = 'Password is too weak. Please choose a stronger password.';
+            break;
+          case 'invalid-email':
+            errorMessage = 'Invalid email format.';
+            break;
+          case 'operation-not-allowed':
+            errorMessage = 'Account creation is currently disabled.';
+            break;
+          case 'network-request-failed':
+            errorMessage = 'Network error. Please check your connection.';
+            break;
+          default:
+            errorMessage = e.message ?? 'Account creation failed. Please try again.';
+        }
+
+        _showSnackBar(errorMessage, backgroundColor: Colors.red);
+      } catch (e) {
+        print('General signup error: $e');
+        _showSnackBar('Something went wrong. Please try again.', backgroundColor: Colors.red);
       } finally {
-        setState(() => _isLoading = false);
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     }
+  }
+
+  void _navigateToLogin() {
+    if (!mounted) return;
+    
+    Navigator.pop(context); // Go back to login screen
   }
 
   @override
@@ -152,7 +205,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     elevation: 0,
                   ),
                   child: _isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        )
                       : const Text(
                           'Create account',
                           style: TextStyle(
@@ -169,20 +225,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'Already have an account ? ',
+                      'Already have an account? ',
                       style: TextStyle(color: Colors.black, fontSize: 14),
                     ),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginScreen()),
-                        );
-                      },
-                      child: const Text(
+                      onTap: _isLoading ? null : _navigateToLogin,
+                      child: Text(
                         'Sign In',
                         style: TextStyle(
-                          color: Colors.blue,
+                          color: _isLoading ? Colors.grey : Colors.blue,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -199,12 +250,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        color: Colors.black,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: Colors.black,
+        ),
       ),
     );
   }
@@ -216,6 +270,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       controller: controller,
       keyboardType: email ? TextInputType.emailAddress : TextInputType.text,
       obscureText: obscureText ? _obscurePassword : false,
+      enabled: !_isLoading,
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey[400]),
@@ -233,21 +288,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
                   color: Colors.grey[600],
                 ),
-                onPressed: () {
-                  setState(() {
-                    _obscurePassword = !_obscurePassword;
-                  });
+                onPressed: _isLoading ? null : () {
+                  if (mounted) {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  }
                 },
               )
             : null,
       ),
       validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter $hint';
+        if (value == null || value.trim().isEmpty) {
+          return 'This field is required';
         }
-        if (email &&
-            !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-          return 'Enter a valid email';
+        if (email) {
+          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+          if (!emailRegex.hasMatch(value.trim())) {
+            return 'Please enter a valid email address';
+          }
         }
         if (obscureText && value.length < 8) {
           return 'Password must be at least 8 characters';
@@ -262,10 +321,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
       children: [
         Checkbox(
           value: _agreeToTerms,
-          onChanged: (value) {
-            setState(() {
-              _agreeToTerms = value ?? false;
-            });
+          onChanged: _isLoading ? null : (value) {
+            if (mounted) {
+              setState(() {
+                _agreeToTerms = value ?? false;
+              });
+            }
           },
           activeColor: Colors.blue,
         ),

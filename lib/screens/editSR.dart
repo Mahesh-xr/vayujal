@@ -27,7 +27,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
   String? _selectedStatus;
   DateTime? _selectedDate;
   String? _selectedRequestType;
-  String? _selectedTechnicianName; // This will store "name - empId"
+  String? _selectedTechnicianName;
 
   final List<String> _statusOptions = ['pending', 'in_progress', 'completed', 'delayed'];
   final List<String> _requestTypeOptions = ['general_maintenance', 'customer_complaint'];
@@ -43,9 +43,19 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
     final serviceDetails = widget.serviceRequest['serviceDetails'] ?? {};
     
     _selectedTechnician = serviceDetails['assignedTo'];
-    _selectedStatus = widget.serviceRequest['status'] ?? 'pending';
+    
+    // Fix status initialization - ensure it's in the options list
+    String? status = widget.serviceRequest['status'];
+    _selectedStatus = _statusOptions.contains(status) ? status : 'pending';
+    
     _commentsController.text = serviceDetails['comments'] ?? '';
-    _selectedRequestType = serviceDetails['requestType'] ?? 'general_maintenance';
+    
+    // Fix request type initialization - ensure it's in the options list
+    String? requestType = serviceDetails['requestType'];
+    _selectedRequestType = _requestTypeOptions.contains(requestType) 
+        ? requestType 
+        : 'general_maintenance';
+    
     _selectedTechnicianName = serviceDetails['assignedTechnician'] ?? 'Unassigned';
     
     // Parse address by date
@@ -73,7 +83,6 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
         _isLoadingTechnicians = false;
       });
 
-      // If current technician is not in the list, update the selected technician name
       _updateTechnicianName();
     } catch (e) {
       setState(() {
@@ -83,9 +92,8 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
     }
   }
 
-  // Helper method to get technician name by empId
   String? _getTechnicianNameById(String? empId) {
-    if (empId == null) return null;
+    if (empId == null) return 'Unassigned';
     
     final technician = _technicians.firstWhere(
       (tech) => tech['empId'] == empId,
@@ -95,19 +103,14 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
     if (technician.isNotEmpty) {
       return '${technician['name']} - ${technician['empId']}';
     }
-    return null;
+    return 'Unassigned';
   }
 
-  // Update technician name when technicians are loaded or selected
   void _updateTechnicianName() {
-    if (_selectedTechnician != null) {
-      String? techName = _getTechnicianNameById(_selectedTechnician);
-      if (techName != null) {
-        setState(() {
-          _selectedTechnicianName = techName;
-        });
-      }
-    }
+    String? techName = _getTechnicianNameById(_selectedTechnician);
+    setState(() {
+      _selectedTechnicianName = techName;
+    });
   }
 
   Future<void> _selectDate() async {
@@ -141,7 +144,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
         comments: _commentsController.text.trim(),
         newAddressByDate: _selectedDate,
         requestType: _selectedRequestType,
-        assignedTechnician: _selectedTechnicianName, // Send the formatted "name - empId"
+        assignedTechnician: _selectedTechnicianName,
       );
 
       if (success) {
@@ -155,7 +158,6 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
           ),
         );
 
-        // Debug print
         debugPrint('=== Service Request Updated ===');
         debugPrint('SR ID: $srId');
         debugPrint('Assigned To (EmpId): $_selectedTechnician');
@@ -199,7 +201,8 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
       child: Container(
         width: MediaQuery.of(context).size.width * 0.9,
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+          maxWidth: MediaQuery.of(context).size.width * 0.9,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -248,13 +251,14 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
             ),
 
             // Body
-            Flexible(
+            Expanded(
               child: Form(
                 key: _formKey,
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       // Assign Technician
                       const Text(
@@ -273,6 +277,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
                           decoration: const InputDecoration(
                             border: OutlineInputBorder(),
                             hintText: 'Select technician',
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           ),
                           items: [
                             const DropdownMenuItem<String>(
@@ -282,7 +287,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
                             ..._technicians.map((tech) {
                               return DropdownMenuItem<String>(
                                 value: tech['empId'],
-                                child: Text('${tech['name']} (${tech['empId']})'),
+                                child: Text('${tech['name']} \n (${tech['empId']})'),
                               );
                             }),
                           ],
@@ -294,7 +299,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
                           },
                         ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       // Status
                       const Text(
@@ -309,6 +314,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
                         value: _selectedStatus,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
                         items: _statusOptions.map((status) {
                           return DropdownMenuItem<String>(
@@ -323,7 +329,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
                         },
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       // Request Type
                       const Text(
@@ -338,6 +344,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
                         value: _selectedRequestType,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
                         items: _requestTypeOptions.map((type) {
                           return DropdownMenuItem<String>(
@@ -352,7 +359,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
                         },
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       // Address By Date
                       const Text(
@@ -390,7 +397,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       // Comments
                       const Text(
@@ -406,8 +413,9 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: 'Add comments...',
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
-                        maxLines: 3,
+                        maxLines: 2,
                       ),
                     ],
                   ),
@@ -417,7 +425,7 @@ class _EditServiceRequestDialogState extends State<EditServiceRequestDialog> {
 
             // Footer
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
                 borderRadius: const BorderRadius.only(

@@ -337,6 +337,7 @@ class _ServiceDetailsPageState extends State<ServiceDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildDetailRow('Status', (_serviceHistory!['status'] ?? '').toString().replaceAll('_', ' ').toUpperCase()),
+          _buildDetailRow('Request Type', _serviceRequest!['serviceDetails']?['requestType'] ?? ''),
           _buildDetailRow('Complaint \nRelated To', _serviceHistory!['complaintRelatedTo'] ?? ''),
           _buildDetailRow('Type of Issue Raised', _serviceHistory!['typeOfRaisedIssue'] ?? ''),
           _buildDetailRow('Issue Type', _serviceHistory!['issueType'] ?? ''),
@@ -947,7 +948,7 @@ class _ServiceDetailsPageState extends State<ServiceDetailsPage> {
                             'Solution Provided', 
                             buildLabeledContent(content: _serviceHistory!['solutionProvided'] ?? '')
                           ),
-                              if (_serviceHistory != null && _serviceHistory!['customSuggestions'] != null)
+                              if (_serviceHistory != null && _serviceHistory!['customSuggestions'] != "")
                           _buildDetailCard(
                             'Custom Suggestions', 
                             buildLabeledContent(content: _serviceHistory!['customSuggestions'] ?? '')

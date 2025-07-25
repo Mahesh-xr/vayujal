@@ -19,6 +19,7 @@ class AdminAction {
           'empId': doc['employeeId'] ?? '',
         };
       }).toList();
+      print("✅ Fetched ${technicians.length} technicians.");
 
       return technicians;
     } catch (e) {

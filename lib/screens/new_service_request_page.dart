@@ -135,75 +135,178 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
   }
 
   // Widget for technician dropdown
-  Widget _buildTechnicianDropdown() {
-    return Card(
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Assign Technician',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+  // Widget _buildTechnicianDropdown() {
+  //   return Card(
+  //     color: Colors.white,
+  //     margin: const EdgeInsets.symmetric(vertical: 8),
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(8),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text(
+  //             'Assign Technician',
+  //             style: Theme.of(context).textTheme.titleMedium?.copyWith(
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //           const SizedBox(height: 12),
+  //           if (_isLoadingTechnicians)
+  //             const Center(
+  //               child: Padding(
+  //                 padding: EdgeInsets.all(16.0),
+  //                 child: CircularProgressIndicator(),
+  //               ),
+  //             )
+  //           else if (_technicians.isEmpty)
+  //             Container(
+  //               padding: const EdgeInsets.all(16),
+  //               decoration: BoxDecoration(
+  //                 color: Colors.orange.shade50,
+  //                 borderRadius: BorderRadius.circular(8),
+  //                 border: Border.all(color: Colors.orange.shade200),
+  //               ),
+  //               child: Row(
+  //                 children: [
+  //                   Icon(Icons.warning, color: Colors.orange.shade600),
+  //                   const SizedBox(width: 8),
+  //                   Expanded(
+  //                     child: Text(
+  //                       'No technicians available. Please add technicians first.',
+  //                       style: TextStyle(color: Colors.orange.shade800),
+  //                     ),
+  //                   ),
+  //                   TextButton(
+  //                     onPressed: _loadTechnicians,
+  //                     child: const Text('Retry'),
+  //                   ),
+  //                 ],
+  //               ),
+  //             )
+  //           else
+  //             DropdownButtonFormField<String>(
+  //               value: _assignedTo,
+  //               decoration: const InputDecoration(
+  //                 labelText: 'Select Technician',
+  //                 border: OutlineInputBorder(),
+  //                 prefixIcon: Icon(Icons.person_outline),
+  //               ),
+  //               items: [
+  //                 // Option for unassigned
+  //                 const DropdownMenuItem<String>(
+  //                   value: null,
+  //                   child: Text('Unassigned'),
+  //                 ),
+  //                 // Technician options
+  //                 ..._technicians.map((technician) {
+  //                   return DropdownMenuItem<String>(
+  //                     value: technician['empId'],
+  //                     child: Text(
+  //                       '${technician['name']} (${technician['empId']})',
+  //                       overflow: TextOverflow.ellipsis,
+  //                     ),
+  //                   );
+  //                 }).toList(),
+  //               ],
+  //               onChanged: (String? value) {
+  //                 setState(() {
+  //                   _assignedTo = value;
+  //                   _assignedTechnician = _getTechnicianNameById(value);
+  //                 });
+  //               },
+  //               validator: (value) {
+  //                 return null;
+  //               },
+  //               hint: const Text('Choose a technician'),
+  //             ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+// Fixed _buildTechnicianDropdown method to prevent overflow
+Widget _buildTechnicianDropdown() {
+  return Card(
+    color: Colors.white,
+    margin: const EdgeInsets.symmetric(vertical: 8),
+    child: Padding(
+      padding: const EdgeInsets.all(16), // Increased padding back to 16
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Assign Technician',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 12),
-            if (_isLoadingTechnicians)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            else if (_technicians.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.warning, color: Colors.orange.shade600),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'No technicians available. Please add technicians first.',
-                        style: TextStyle(color: Colors.orange.shade800),
-                      ),
+          ),
+          const SizedBox(height: 12),
+          if (_isLoadingTechnicians)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_technicians.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.warning, color: Colors.orange.shade600),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'No technicians available. Please add technicians first.',
+                      style: TextStyle(color: Colors.orange.shade800),
                     ),
-                    TextButton(
-                      onPressed: _loadTechnicians,
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              )
-            else
-              DropdownButtonFormField<String>(
+                  ),
+                  TextButton(
+                    onPressed: _loadTechnicians,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            )
+          else
+            // Wrap the dropdown in a Container to control width
+            SizedBox(
+              width: double.infinity, // Take full available width
+              child: DropdownButtonFormField<String>(
                 value: _assignedTo,
+                isExpanded: true, // This prevents overflow by allowing text to expand
                 decoration: const InputDecoration(
                   labelText: 'Select Technician',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 ),
                 items: [
                   // Option for unassigned
                   const DropdownMenuItem<String>(
                     value: null,
-                    child: Text('Unassigned'),
+                    child: Text(
+                      'Unassigned',
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   // Technician options
                   ..._technicians.map((technician) {
+                    String displayText = '${technician['name']} (${technician['empId']})';
                     return DropdownMenuItem<String>(
                       value: technician['empId'],
-                      child: Text(
-                        '${technician['name']} (${technician['empId']})',
-                        overflow: TextOverflow.ellipsis,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          displayText,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
                     );
                   }).toList(),
@@ -217,14 +320,138 @@ class _NewServiceRequestPageState extends State<NewServiceRequestPage> {
                 validator: (value) {
                   return null;
                 },
-                hint: const Text('Choose a technician'),
+                hint: const Text(
+                  'Choose a technician',
+                  overflow: TextOverflow.ellipsis,
+                ),
+                // Additional properties to prevent overflow
+                menuMaxHeight: 300, // Limit dropdown menu height
+                borderRadius: BorderRadius.circular(8),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
+// // Alternative version with even more compact layout
+// Widget _buildTechnicianDropdownCompact() {
+//   return Card(
+//     color: Colors.white,
+//     margin: const EdgeInsets.symmetric(vertical: 8),
+//     child: Padding(
+//       padding: const EdgeInsets.all(16),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text(
+//             'Assign Technician',
+//             style: Theme.of(context).textTheme.titleMedium?.copyWith(
+//               fontWeight: FontWeight.bold,
+//             ),
+//           ),
+//           const SizedBox(height: 12),
+//           if (_isLoadingTechnicians)
+//             const Center(
+//               child: Padding(
+//                 padding: EdgeInsets.all(16.0),
+//                 child: CircularProgressIndicator(),
+//               ),
+//             )
+//           else if (_technicians.isEmpty)
+//             Container(
+//               width: double.infinity,
+//               padding: const EdgeInsets.all(16),
+//               decoration: BoxDecoration(
+//                 color: Colors.orange.shade50,
+//                 borderRadius: BorderRadius.circular(8),
+//                 border: Border.all(color: Colors.orange.shade200),
+//               ),
+//               child: Column(
+//                 children: [
+//                   Row(
+//                     children: [
+//                       Icon(Icons.warning, color: Colors.orange.shade600),
+//                       const SizedBox(width: 8),
+//                       const Expanded(
+//                         child: Text(
+//                           'No technicians available',
+//                           style: TextStyle(fontWeight: FontWeight.w500),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                   const SizedBox(height: 8),
+//                   SizedBox(
+//                     width: double.infinity,
+//                     child: ElevatedButton.icon(
+//                       onPressed: _loadTechnicians,
+//                       icon: const Icon(Icons.refresh, size: 16),
+//                       label: const Text('Retry Loading'),
+//                       style: ElevatedButton.styleFrom(
+//                         backgroundColor: Colors.orange.shade100,
+//                         foregroundColor: Colors.orange.shade800,
+//                         elevation: 0,
+//                       ),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             )
+//           else
+//             ConstrainedBox(
+//               constraints: const BoxConstraints(maxWidth: double.infinity),
+//               child: DropdownButtonFormField<String>(
+//                 value: _assignedTo,
+//                 isExpanded: true, // Critical for preventing overflow
+//                 decoration: InputDecoration(
+//                   labelText: 'Select Technician',
+//                   border: const OutlineInputBorder(),
+//                   prefixIcon: const Icon(Icons.person_outline),
+//                   contentPadding: const EdgeInsets.symmetric(
+//                     horizontal: 12, 
+//                     vertical: 16
+//                   ),
+//                   // Ensure proper spacing for the dropdown arrow
+//                   suffixIconConstraints: const BoxConstraints(
+//                     minWidth: 40,
+//                     minHeight: 40,
+//                   ),
+//                 ),
+//                 items: [
+//                   const DropdownMenuItem<String>(
+//                     value: null,
+//                     child: Text('Unassigned'),
+//                   ),
+//                   ..._technicians.map((technician) {
+//                     return DropdownMenuItem<String>(
+//                       value: technician['empId'],
+//                       child: Text(
+//                         '${technician['name']} (${technician['empId']})',
+//                         overflow: TextOverflow.ellipsis,
+//                         maxLines: 1,
+//                       ),
+//                     );
+//                   }).toList(),
+//                 ],
+//                 onChanged: (String? value) {
+//                   setState(() {
+//                     _assignedTo = value;
+//                     _assignedTechnician = _getTechnicianNameById(value);
+//                   });
+//                 },
+//                 validator: (value) => null,
+//                 hint: const Text('Choose a technician'),
+//                 menuMaxHeight: 300,
+//               ),
+//             ),
+//         ],
+//       ),
+//     ),
+//   );
+// }
+  
   @override
   void dispose() {
     _modelController.dispose();

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
@@ -35,7 +36,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   String _profileImageUrl = '';
 
   final List<String> _designations = [
-    'Admin'
+    'Admin',
     'Technician',
     'Senior Technician',
     'Lead Technician',
@@ -628,4 +629,44 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       ),
     );
   }
+
+
+
+  // Add this method to your ProfileSetupScreen class
+// Call this method when the user successfully completes profile setup
+
+Future<void> _completeProfileSetup({
+  required String employeeId,
+  required String mobileNumber,
+  required String designation,
+  // Add other required fields
+}) async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Update the user document with profile completion
+    await FirebaseFirestore.instance
+        .collection('admins')
+        .doc(user.uid)
+        .update({
+      'employeeId': employeeId,
+      'mobileNumber': mobileNumber,
+      'designation': designation,
+      'isProfileComplete': true, // This is the key field
+      'profileCompletedAt': FieldValue.serverTimestamp(),
+      // Add other fields as needed
+    });
+
+    print('Profile setup completed successfully');
+    
+    // Don't navigate manually - let AuthWrapper handle it
+    // The AuthWrapper will detect the profile completion and redirect to Dashboard
+    
+  } catch (e) {
+    print('Error completing profile setup: $e');
+    // Handle error appropriately
+    throw e;
+  }
+}
 }

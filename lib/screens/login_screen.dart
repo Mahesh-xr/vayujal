@@ -1,12 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:vayujal/screens/dashboard_screen.dart';
-import 'package:vayujal/screens/profile_setup_screen.dart';
 import 'package:vayujal/screens/signup_screen.dart';
 import 'package:vayujal/screens/verification_screen.dart';
 import 'package:vayujal/widgets/navigations/NormalAppBar.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart'; // Added for Firestore
+import 'package:vayujal/screens/dashboard_screen.dart'; // Added for DashboardScreen
+import 'package:vayujal/screens/profile_setup_screen.dart'; // Added for ProfileSetupScreen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,11 +22,34 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _showSnackBar(String message, {Color? backgroundColor}) {
+    if (!mounted) return;
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor ?? Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
+  void _setLoading(bool loading) {
+    if (!mounted) return;
+    setState(() => _isLoading = loading);
+  }
 
   Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+    if (_formKey.currentState!.validate()) {                                                                                                                                                                                                                                                                                                                                                                                                                                                     g
+      _setLoading(true);
 
       try {
         print('=== LOGIN ATTEMPT ===');
@@ -41,9 +63,25 @@ class _LoginScreenState extends State<LoginScreen> {
         print('Login successful for user: ${result.user?.uid}');
         print('User email verified: ${result.user?.emailVerified}');
 
-        // Check if user profile is complete
-        if (result.user != null) {
-          await _checkProfileAndNavigate(result.user!.uid);
+        // After login, check isProfileComplete in Firestore
+        final userDoc = await FirebaseFirestore.instance
+            .collection('admins')
+            .doc(result.user!.uid)
+            .get();
+        final data = userDoc.data() as Map<String, dynamic>?;
+        final bool isProfileComplete = data != null && data['isProfileComplete'] == true;
+        print(isProfileComplete ? 'Profile is complete' : 'Profile is not complete');
+        if (!mounted) return;
+        if (isProfileComplete) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+          );
         }
         
       } on FirebaseAuthException catch (e) {
@@ -76,95 +114,23 @@ class _LoginScreenState extends State<LoginScreen> {
             errorMessage = e.message ?? 'Login failed. Please try again.';
         }
         
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 4),
-            ),
-          );
-        }
+        _showSnackBar(errorMessage);
       } catch (e) {
         print('General login error: $e');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Something went wrong. Please try again.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        _showSnackBar('Something went wrong. Please try again.');
       } finally {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
-      }
-    }
-  }
-
-  Future<void> _checkProfileAndNavigate(String uid) async {
-    try {
-      print('=== CHECKING PROFILE COMPLETION ===');
-      print('Checking profile for UID: $uid');
-      
-      // Get the technician document from Firestore
-      final DocumentSnapshot adminDoc = await _firestore
-          .collection('admins')
-          .doc(uid)
-          .get();
-
-      if (adminDoc.exists) {
-        final data = adminDoc.data() as Map<String, dynamic>?;
-        final bool isProfileComplete = data?['isProfileComplete'] ?? false;
-        
-        print('Profile complete status: $isProfileComplete');
-        
-        if (mounted) {
-          if (isProfileComplete) {
-            // Profile is complete, navigate to dashboard
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const DashboardScreen()),
-            );
-          } else {
-            // Profile is not complete, navigate to profile setup
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
-            );
-          }
-        }
-      } else {
-        print('Technician document not found, navigating to profile setup');
-        // Document doesn't exist, navigate to profile setup
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
-          );
-        }
-      }
-    } catch (e) {
-      print('Error checking profile: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error checking profile. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _setLoading(false);
       }
     }
   }
 
   void _recoverAccount() {
     if (_emailController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your email first.')),
-      );
+      _showSnackBar('Please enter your email first.', backgroundColor: Colors.orange);
       return;
     }
+
+    if (!mounted) return;
 
     Navigator.push(
       context,
@@ -174,18 +140,20 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  void _navigateToSignUp() {
+    if (!mounted) return;
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => SignUpScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: Normalappbar(title:'Login'),
+      appBar: Normalappbar(title: 'Login'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -206,6 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                enabled: !_isLoading,
                 decoration: InputDecoration(
                   hintText: 'Email',
                   hintStyle: TextStyle(color: Colors.grey[400]),
@@ -235,6 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
+                enabled: !_isLoading,
                 decoration: InputDecoration(
                   hintText: 'Password',
                   hintStyle: TextStyle(color: Colors.grey[400]),
@@ -253,8 +223,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           : Icons.visibility,
                       color: Colors.grey[600],
                     ),
-                    onPressed: () {
-                      setState(() => _obscurePassword = !_obscurePassword);
+                    onPressed: _isLoading ? null : () {
+                      if (mounted) {
+                        setState(() => _obscurePassword = !_obscurePassword);
+                      }
                     },
                   ),
                 ),
@@ -312,7 +284,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: _recoverAccount,
+                  onPressed: _isLoading ? null : _recoverAccount,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[300],
                     shape: RoundedRectangleBorder(
@@ -337,14 +309,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text("Don't have an account? ",
                         style: TextStyle(color: Colors.black)),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => SignUpScreen()));
-                      },
-                      child: const Text(
+                      onTap: _isLoading ? null : _navigateToSignUp,
+                      child: Text(
                         'Sign Up',
                         style: TextStyle(
-                            color: Colors.blue, fontWeight: FontWeight.w600),
+                            color: _isLoading ? Colors.grey : Colors.blue, 
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],

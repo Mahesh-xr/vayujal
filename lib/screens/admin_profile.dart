@@ -228,7 +228,7 @@ class _AdminProfileSetupPageState extends State<AdminProfileSetupPage> {
       final user = _auth.currentUser;
       if (user != null) {
         await _firestore.collection('admins').doc(user.uid).set({
-          'name': _nameController.text.trim(),
+          'fullName': _nameController.text.trim(),
           'email': _emailController.text.trim(),
           'mobileNumber': _phoneController.text.trim(),
           'employeeId': _organizationController.text.trim(),

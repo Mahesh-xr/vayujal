@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vayujal/screens/login_screen.dart';
-import 'package:vayujal/screens/signup_screen.dart';
 import 'dart:async';
+import 'package:vayujal/services/auth.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,15 +10,27 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
-    Timer(Duration(milliseconds: 2000), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
+    _timer = Timer(Duration(milliseconds: 2000), () {
+      // Check if the widget is still mounted before navigation
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AuthWrapper()),
+        );
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    // Cancel the timer if the widget is disposed
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
